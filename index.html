@@ -1046,12 +1046,12 @@ function vpDown(e){
     const sx=snapV(delta.dwx),sy=snapV(delta.dwy),sz=snapV(delta.dwz);
     saveState();
     let o;
-    if(tool==='plane')o=mkPlane({x:sx,y:sy,z:sz,w:100,h:250,axis:'z',rotZ:Math.round(-camZ*180/Math.PI)||0,color:COLORS[Math.floor(Math.random()*3)+1]});
+    // Set rotZ explicitly to 0 instead of aligning to the camera angle
+    if(tool==='plane')o=mkPlane({x:sx,y:sy,z:sz,w:100,h:250,axis:'z',rotZ:0,color:COLORS[Math.floor(Math.random()*3)+1]});
     else o=mkCube({x:sx,y:sy,z:sz,w:80,d:80,h:80,color:COLORS[1]});
     objects.push(o);selectedId=o.id;setTool('select');render();updateProps();
   }
 }
-
 function handleObjectDown(e,id){
   if(tool==='comment'){showCommentInput(e,id);return;}
   selectObject(id);
