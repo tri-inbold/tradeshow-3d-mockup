@@ -258,12 +258,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <div class="tb-group">
       <button class="tb-btn active" id="btn-snap" onclick="toggleSnap()">Snap</button>
       <button class="tb-btn" id="btn-grid" onclick="toggleGrid()">Grid</button>
+      <button class="tb-btn" id="btn-names" onclick="toggleNames()">Names</button>
     </div>
 
     <div class="tb-group">
       <button class="tb-btn active" id="mode-ortho" onclick="setProjMode('ortho')">Ortho</button>
-      <button class="tb-btn" id="mode-persp" onclick="setProjMode('persp')">Persp</button>
-    </div>
+      <button class="tb-btn" id="mode-persp" onclick="setProjMode('persp')" style="gap:5px;">
+		  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg" id="persp-origin-icon">
+			<circle cx="1.5"  cy="11.5" r="1.5" fill="currentColor"/>
+			<circle cx="6.5"  cy="11.5" r="1.5" fill="currentColor"/>
+			<circle cx="11.5" cy="11.5" r="1.5" fill="currentColor"/>
+			<circle cx="3"    cy="6.5"  r="1.5" fill="currentColor"/>
+			<circle cx="7.5"  cy="6.5"  r="1.5" fill="currentColor"/>
+			<circle cx="11.5" cy="6.5"  r="1.5" fill="currentColor"/>
+			<circle cx="4.5"  cy="1.5"  r="1.5" fill="currentColor"/>
+			<circle cx="8.5"  cy="1.5"  r="1.5" fill="currentColor"/>
+			<circle cx="11.5" cy="1.5"  r="1.5" fill="currentColor"/>
+		  </svg>
+		  Persp
+		</button>    </div>
 
     <div class="tb-group">
       <button class="tb-btn" id="vb-tl" onclick="setView('tl')">TL</button>
@@ -373,8 +386,11 @@ let selectedCubeFace='front';
 let tool='select';
 let unit='cm';
 let showGrid=false;
+let showNames=false;
+let hoveredNameId=null;
 let snapEnabled=true;
 let isPerspective=false;
+let perspOrigin={x:0,y:0,z:0}; // world-space perspective vanishing origin
 
 let camZ=Math.PI/4;
 let camX=0.6154797086703873; 
@@ -575,6 +591,7 @@ const svg=document.getElementById('iso-canvas');
 function mkEl(t){return document.createElementNS(SVG_NS,t);}
 
 function render(){
+  ensurePerspOriginOverlay();
   const vp=document.getElementById('viewport');
   const W=vp.clientWidth, H=vp.clientHeight;
   
@@ -587,10 +604,10 @@ function render(){
   if(showGrid) {
       const grid = document.createElement('div');
       grid.style.position = 'absolute';
-      grid.style.width = '4800px';  // 1200 * 4
-      grid.style.height = '4800px'; // 1200 * 4
+      grid.style.width = '4800px';
+      grid.style.height = '4800px';
       grid.style.transformOrigin = '0 0';
-      grid.style.transform = 'translate3d(-2400px, -2400px, 0)'; // Half of 4800 to center it
+      grid.style.transform = 'translate3d(-2400px, -2400px, 0)';
       grid.style.backgroundImage = `linear-gradient(rgba(176,176,192,0.3) 0.5px, transparent 0.5px), linear-gradient(90deg, rgba(176,176,192,0.3) 0.5px, transparent 0.5px)`;
       grid.style.backgroundSize = '20px 20px';
       grid.style.pointerEvents = 'none';
@@ -598,14 +615,14 @@ function render(){
   }
 
   objects.filter(o=>o.visible).forEach(o => {
-      if(o.type === 'plane') drawCssPlane(sceneNode, o);
-      else drawCssCube(sceneNode, o);
+    if(o.type === 'plane') drawCssPlane(sceneNode, o);
+    else drawCssCube(sceneNode, o);
   });
 
   svg.setAttribute('width', W);
   svg.setAttribute('height', H);
   svg.innerHTML='';
-  
+
   const cx=W/2+panX, cy=H/2+panY;
   const g=mkEl('g');
   g.setAttribute('transform',`translate(${cx},${cy}) scale(${zoomS})`);
@@ -621,14 +638,64 @@ function render(){
     });
   }
   if(snapEnabled&&(snapLines.x!==null||snapLines.y!==null))drawSnapLines(g);
-  
+
+  // Draw object name labels if showNames is on
+  if(showNames){
+    objects.filter(o=>o.visible).forEach(o=>{
+      let corners = o.type==='plane' ? planeCorners(o) : Object.values(cubeCorners(o)).flat();
+      let pts = corners.map(([cx2,cy2,cz2])=>proj(cx2,cy2,cz2));
+      // Find top-left projected point (min sx among those with min sy)
+      let minSy = Math.min(...pts.map(p=>p.sy));
+      let topPts = pts.filter(p=>p.sy <= minSy+20);
+      let labelPt = topPts.reduce((a,b)=>a.sx<b.sx?a:b);
+
+      const isHovered = o.id === hoveredNameId;
+      const isSelected = selectedIds.includes(o.id);
+
+      const rect = mkEl('rect');
+      const textEl = mkEl('text');
+      textEl.textContent = o.name;
+      textEl.setAttribute('x', labelPt.sx);
+      textEl.setAttribute('y', labelPt.sy - 6/zoomS);
+      textEl.setAttribute('fill', isSelected ? '#0d99ff' : isHovered ? '#0d99ff' : '#1a1a1a');
+      textEl.setAttribute('font-size', 11/zoomS);
+      textEl.setAttribute('font-family', 'Inter,sans-serif');
+      textEl.setAttribute('font-weight', isSelected||isHovered ? '600' : '400');
+      textEl.setAttribute('text-anchor', 'start');
+      textEl.setAttribute('dominant-baseline', 'auto');
+      textEl.setAttribute('pointer-events', 'none');
+
+      // Background pill
+      const padX = 4/zoomS, padY = 2/zoomS, h = 13/zoomS;
+      const approxW = o.name.length * 6.2/zoomS;
+      rect.setAttribute('x', labelPt.sx - padX);
+      rect.setAttribute('y', labelPt.sy - h - padY - 6/zoomS);
+      rect.setAttribute('width', approxW + padX*2);
+      rect.setAttribute('height', h + padY*2);
+      rect.setAttribute('rx', 3/zoomS);
+      rect.setAttribute('fill', isSelected ? 'rgba(13,153,255,0.12)' : isHovered ? 'rgba(13,153,255,0.08)' : 'rgba(255,255,255,0.85)');
+      rect.setAttribute('stroke', isSelected||isHovered ? 'rgba(13,153,255,0.3)' : 'rgba(0,0,0,0.08)');
+      rect.setAttribute('stroke-width', 0.8/zoomS);
+      rect.setAttribute('pointer-events', 'auto');
+      rect.setAttribute('cursor', 'pointer');
+      rect.addEventListener('mouseenter', ()=>{ hoveredNameId=o.id; render(); });
+      rect.addEventListener('mouseleave', ()=>{ hoveredNameId=null; render(); });
+      rect.addEventListener('mousedown', (e)=>{ e.stopPropagation(); selectObject(o.id, e.shiftKey||e.metaKey||e.ctrlKey); });
+
+      g.appendChild(rect);
+      g.appendChild(textEl);
+    });
+  }
+
   updateDimInputs();
   renderComments();
   updateLayers();
   updateStatusBar();
-  
+
   document.getElementById('empty-hint').style.display=objects.length?'none':'block';
   document.getElementById('vp-obj-name').textContent=selectedIds.length===1?(objects.find(o=>o.id===selectedIds[0])?.name||'Scene'):(selectedIds.length>1?`${selectedIds.length} Objects Selected`:'Scene Overview');
+
+  if(isPerspective) rebuildOriginDotsSVG();
 }
 
 function drawCssPlane(scene, p) {
@@ -983,6 +1050,41 @@ function drawCubeResizeDots(g,o){
   });
 }
 
+// ── ORIGIN DOT INDICATOR (9-point Z face grid) ────────────────────────
+function drawOriginDots(g, o) {
+  // The Z face (front face) corners in world space:
+  // front face = [wp3, wp2, wp6, wp7] = bottom-left, bottom-right, top-right, top-left
+  const rZ = (o.rotZ || 0) * Math.PI / 180;
+  const cosR = Math.cos(rZ), sinR = Math.sin(rZ);
+
+  // 4 corners of the Z (front) face in world coords
+  const bl = [o.x - o.d * sinR,           o.y + o.d * cosR,           o.z];
+  const br = [o.x + o.w * cosR - o.d * sinR, o.y + o.w * sinR + o.d * cosR, o.z];
+  const tr = [o.x + o.w * cosR - o.d * sinR, o.y + o.w * sinR + o.d * cosR, o.z + o.h];
+  const tl = [o.x - o.d * sinR,           o.y + o.d * cosR,           o.z + o.h];
+
+  // Interpolate 9 points in a 3x3 grid (u=0,0.5,1 across width; v=0,0.5,1 up height)
+  const us = [0, 0.5, 1];
+  const vs = [0, 0.5, 1];
+
+  us.forEach(u => {
+    vs.forEach(v => {
+      const wx = bl[0] + u * (br[0] - bl[0]) + v * (tl[0] - bl[0]);
+      const wy = bl[1] + u * (br[1] - bl[1]) + v * (tl[1] - bl[1]);
+      const wz = bl[2] + u * (br[2] - bl[2]) + v * (tl[2] - bl[2]);
+      const p = proj(wx, wy, wz);
+
+      const dot = mkEl('circle');
+      dot.setAttribute('cx', p.sx);
+      dot.setAttribute('cy', p.sy);
+      dot.setAttribute('r', 4 / zoomS);
+      dot.setAttribute('fill', '#1a1a1a');
+      dot.setAttribute('pointer-events', 'none');
+      g.appendChild(dot);
+    });
+  });
+}
+
 function drawCluster(g,sx,sy,p,isLeft){
   const cluster=mkEl('g');
   cluster.setAttribute('transform',`translate(${sx},${sy}) scale(${1/zoomS})`);
@@ -1116,6 +1218,124 @@ function drawHandles(g,o){
     drawCluster(g,pts[3].sx,pts[3].sy,o,true);
     drawCluster(g,pts[2].sx,pts[2].sy,o,false);
   }
+}
+
+// ── PERSPECTIVE ORIGIN PICKER (9-dot panel) ───────────────────────────
+// ── PERSPECTIVE ORIGIN PICKER ─────────────────────────────────────────
+function getOriginDotPoints() {
+  const allPts = objects.filter(o => !(o.type==='plane' && o.axis==='floor')).flatMap(o =>
+    o.type==='plane' ? planeCorners(o) : Object.values(cubeCorners(o)).flat()
+  );
+  if (!allPts.length) return null;
+  const xs=allPts.map(p=>p[0]), ys=allPts.map(p=>p[1]), zs=allPts.map(p=>p[2]);
+  return { minX:Math.min(...xs), maxX:Math.max(...xs), minY:Math.min(...ys), maxY:Math.max(...ys), minZ:Math.min(...zs), maxZ:Math.max(...zs) };
+}
+
+function rebuildOriginDotsSVG() {
+  const dotSvg = document.getElementById('persp-origin-svg');
+  if (!dotSvg) return;
+  dotSvg.innerHTML = '';
+  const bb = getOriginDotPoints();
+  if (!bb) return;
+  const midY = (bb.minY + bb.maxY) / 2;
+
+  const points = [
+    { xf:0, zf:0 }, { xf:0, zf:0.25 }, { xf:0, zf:0.5 }, { xf:0, zf:0.75 }, { xf:0, zf:1 },
+    { xf:0.25, zf:1 }, { xf:0.5, zf:1 }, { xf:0.75, zf:1 }, { xf:1, zf:1 },
+  ];
+
+  const projected = points.map(({ xf, zf }) => {
+    const wx = bb.minX + xf * (bb.maxX - bb.minX);
+    const wz = bb.minZ + zf * (bb.maxZ - bb.minZ);
+    const p = proj(wx, midY, wz);
+    return { p, xf, zf };
+  });
+
+  const sxs = projected.map(d => d.p.sx);
+  const sys = projected.map(d => d.p.sy);
+  const pMinX=Math.min(...sxs), pMaxX=Math.max(...sxs);
+  const pMinY=Math.min(...sys), pMaxY=Math.max(...sys);
+  const pW = pMaxX-pMinX || 1, pH = pMaxY-pMinY || 1;
+  const svgW=110, svgH=60, pad=14;
+
+  const toSVG = (sx, sy) => ({
+    x: pad + ((sx-pMinX)/pW)*svgW,
+    y: pad + ((sy-pMinY)/pH)*svgH
+  });
+
+  // Shaded triangle fill
+  const botLeft  = toSVG(projected[0].p.sx, projected[0].p.sy);
+  const topLeft  = toSVG(projected[4].p.sx, projected[4].p.sy);
+  const topRight = toSVG(projected[8].p.sx, projected[8].p.sy);
+  const poly = document.createElementNS(SVG_NS, 'polygon');
+  poly.setAttribute('points', `${botLeft.x},${botLeft.y} ${topLeft.x},${topLeft.y} ${topRight.x},${topRight.y}`);
+  poly.setAttribute('fill', 'rgba(0,0,0,0.06)');
+  dotSvg.appendChild(poly);
+
+  // Edge lines
+  const edgeLeft = projected.slice(0,5);
+  const edgeTop  = [projected[4], ...projected.slice(5)];
+  [edgeLeft, edgeTop].forEach(edge => {
+    for (let i=0; i<edge.length-1; i++) {
+      const a = toSVG(edge[i].p.sx, edge[i].p.sy);
+      const b = toSVG(edge[i+1].p.sx, edge[i+1].p.sy);
+      const line = document.createElementNS(SVG_NS, 'line');
+      line.setAttribute('x1',a.x); line.setAttribute('y1',a.y);
+      line.setAttribute('x2',b.x); line.setAttribute('y2',b.y);
+      line.setAttribute('stroke','rgba(0,0,0,0.15)');
+      line.setAttribute('stroke-width','1');
+      dotSvg.appendChild(line);
+    }
+  });
+
+  // Dots
+  projected.forEach(({ p, xf, zf }) => {
+    const s = toSVG(p.sx, p.sy);
+    const circle = document.createElementNS(SVG_NS, 'circle');
+    circle.setAttribute('cx', s.x); circle.setAttribute('cy', s.y);
+    circle.setAttribute('r', 5.5);
+    circle.setAttribute('fill', '#1a1a1a');
+    circle.style.cursor = 'pointer';
+    circle.addEventListener('mouseenter', () => circle.setAttribute('fill','#0d99ff'));
+    circle.addEventListener('mouseleave', () => { if(circle.dataset.selected!=='1') circle.setAttribute('fill','#1a1a1a'); });
+    circle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const bb2 = getOriginDotPoints(); if(!bb2) return;
+      perspOrigin = { x: bb2.minX+xf*(bb2.maxX-bb2.minX), y:(bb2.minY+bb2.maxY)/2, z: bb2.minZ+zf*(bb2.maxZ-bb2.minZ) };
+      const pt = proj(perspOrigin.x, perspOrigin.y, perspOrigin.z);
+      panX = -pt.sx*zoomS; panY = -pt.sy*zoomS;
+      document.getElementById('zoom-label').textContent = Math.round(zoomS*100)+'%';
+      dotSvg.querySelectorAll('circle').forEach(c=>{ c.dataset.selected='0'; c.setAttribute('fill','#1a1a1a'); });
+      circle.dataset.selected='1'; circle.setAttribute('fill','#0d99ff');
+      render();
+    });
+    dotSvg.appendChild(circle);
+  });
+
+  dotSvg.setAttribute('viewBox', `0 0 ${svgW+pad*2} ${svgH+pad*2}`);
+}
+
+function ensurePerspOriginOverlay(){
+  if(document.getElementById('persp-origin-overlay')) {
+    if(isPerspective) rebuildOriginDotsSVG();
+    return;
+  }
+  const vp = document.getElementById('viewport');
+  const overlay = document.createElement('div');
+  overlay.id = 'persp-origin-overlay';
+  overlay.style.cssText = 'position:absolute;bottom:30px;left:12px;z-index:20;display:none;flex-direction:column;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);padding:8px;align-items:center;';
+
+  const label = document.createElement('div');
+  label.textContent = 'Origin';
+  label.style.cssText = 'font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.4px;text-transform:uppercase;';
+  overlay.appendChild(label);
+
+  const dotSvg = document.createElementNS(SVG_NS, 'svg');
+  dotSvg.id = 'persp-origin-svg';
+  dotSvg.style.cssText = 'width:138px;height:88px;display:block;overflow:visible;cursor:pointer;';
+  overlay.appendChild(dotSvg);
+  vp.appendChild(overlay);
+  rebuildOriginDotsSVG();
 }
 
 function drawSnapLines(g){
@@ -1917,6 +2137,9 @@ function setProjMode(mode){
   isPerspective = (mode === 'persp');
   document.getElementById('mode-ortho').classList.toggle('active', !isPerspective);
   document.getElementById('mode-persp').classList.toggle('active', isPerspective);
+  // Show/hide the origin dot picker overlay
+  const overlay = document.getElementById('persp-origin-overlay');
+  if(overlay) overlay.style.display = isPerspective ? 'flex' : 'none';
   render();
 }
 
@@ -1925,7 +2148,10 @@ function updateLayers(){
   const el=document.getElementById('layer-list');
   if(!objects.length){el.innerHTML='<div style="padding:16px 12px;text-align:center;color:var(--text3);font-size:11px;">No objects yet</div>';return;}
   el.innerHTML=[...objects].reverse().map(o=>`
-    <div class="layer-item ${selectedIds.includes(o.id)?'selected':''} ${!o.visible?'hidden':''}" onclick="selectObject(${o.id}, event.shiftKey||event.metaKey||event.ctrlKey)">
+    <div class="layer-item ${selectedIds.includes(o.id)?'selected':''} ${!o.visible?'hidden':''} ${hoveredNameId===o.id?'hovered':''}"
+      onclick="selectObject(${o.id}, event.shiftKey||event.metaKey||event.ctrlKey)"
+      onmouseenter="hoveredNameId=${o.id}; if(showNames) render();"
+      onmouseleave="hoveredNameId=null; if(showNames) render();">
       <div class="layer-thumb" style="background:${o.color};"></div><span class="layer-name">${o.name}</span><span class="layer-type">${o.type==='cube'?'Box':'Wall'}</span>
       <div class="layer-vis-btn" onclick="event.stopPropagation();toggleVis(${o.id})">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><${o.visible?'':'path d="M1 1l10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>'}${o.visible?'<circle cx="6" cy="6" r="2" stroke="currentColor" stroke-width="1.1"/><path d="M1 6s1.8-3 5-3 5 3 5 3-1.8 3-5 3-5-3-5-3z" stroke="currentColor" stroke-width="1.1"/>':''}</svg>
@@ -2006,6 +2232,7 @@ function fitView(){
 
 function toggleSnap(){snapEnabled=!snapEnabled;document.getElementById('btn-snap').classList.toggle('active',snapEnabled);updateStatusBar();}
 function toggleGrid(){showGrid=!showGrid;document.getElementById('btn-grid').classList.toggle('active',showGrid);render();}
+function toggleNames(){showNames=!showNames;document.getElementById('btn-names').classList.toggle('active',showNames);render();}
 
 // ── CONTEXT MENU ──────────────────────────────────────────────────────
 function showCtxMenu(e){
