@@ -39,7 +39,16 @@
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;font-size:12px;user-select:none;-webkit-font-smoothing:antialiased;}
 
 /* ── TOOLBAR ── */
-#toolbar{height:var(--toolbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:2px;flex-shrink:0;z-index:100;}
+#toolbar {
+  height: var(--toolbar-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  flex-shrink: 0;
+  z-index: 100;
+}
 .logo{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.3px;margin-right:8px;display:flex;align-items:center;gap:5px;white-space:nowrap;}
 .logo-dot{width:8px;height:8px;background:var(--accent);border-radius:2px;}
 .tb-sep{width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0;}
@@ -47,7 +56,25 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .tb-btn:hover{background:var(--surface3);color:var(--text);}
 .tb-btn.active{background:var(--accent-bg2);color:var(--accent);}
 .tb-btn .kb{font-size:9px;opacity:.5;font-weight:400;margin-left:1px;}
-.tb-right{margin-left:auto;display:flex;align-items:center;gap:2px;}
+.tb-left {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1; /* Pushes center tools to middle */
+}
+.tb-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tb-right {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1; /* Balances the left side */
+  justify-content: flex-end;
+  position: relative;
+}
 .btn-primary{height:28px;padding:0 12px;background:var(--accent);border:none;border-radius:var(--radius-sm);color:#fff;cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;transition:background .1s;}
 .btn-primary:hover{background:var(--accent-hover);}
 .btn-secondary{height:28px;padding:0 10px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;transition:all .1s;}
@@ -102,14 +129,35 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 #zoom-label{height:26px;padding:0 8px;border:none;border-left:1px solid var(--border);border-right:1px solid var(--border);background:transparent;color:var(--text2);font-family:'Inter',sans-serif;font-size:11px;display:flex;align-items:center;}
 
 /* ── COMMENTS & MISC ── */
-.comment-pin{position:absolute;cursor:pointer;transform:translate(-50%,-100%);z-index:30;transition:transform .15s;}
+@keyframes comment-flash {
+  0% { background: rgba(245, 158, 11, 0.2); } /* Orange tint */
+  100% { background: var(--accent-bg); }
+}
+.comment-card-highlight {
+  animation: comment-flash 0.5s ease-out forwards;
+  background: var(--accent-bg) !important;
+}
+.comment-pin{position:absolute;cursor:pointer;transform:translate(-50%,-100%);z-index:500;transition:transform .15s; pointer-events: auto !important;}
 .comment-pin:hover{transform:translate(-50%,-100%) scale(1.1);}
-.comment-bubble{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;min-width:160px;max-width:220px;box-shadow:var(--shadow-md);z-index:40;transform:translateY(4px);}
+.comment-bubble{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;min-width:160px;max-width:220px;box-shadow:var(--shadow-md);z-index:600;transform:translateY(4px);}
 .comment-author{font-size:10px;font-weight:600;color:var(--accent);margin-bottom:4px;}
 .comment-text{font-size:11px;color:var(--text);line-height:1.5;word-break:break-word;}
 .comment-time{font-size:9px;color:var(--text3);margin-top:4px;}
 .comment-input-bubble{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;width:220px;box-shadow:var(--shadow-md);z-index:40;}
 .comment-input-bubble textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 8px;font-family:'Inter',sans-serif;font-size:11px;resize:none;outline:none;height:60px;color:var(--text);background:var(--surface3);}
+[data-id].comment-target-highlight {
+  box-shadow: inset 0 0 0 3px var(--orange) !important;
+  outline: 2px solid var(--orange) !important;
+  z-index: 1000;
+}
+#comment-ghost {
+  position: absolute;
+  pointer-events: none;
+  display: none;
+  transform: translate(-50%, -100%);
+  z-index: 1001;
+  opacity: 0.7;
+}
 #ctx-menu{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;z-index:999;min-width:168px;box-shadow:var(--shadow-lg);display:none;}
 .ctx-item{padding:5px 10px;border-radius:var(--radius-xs);cursor:pointer;color:var(--text2);font-size:11px;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:all .08s;}
 .ctx-item:hover{background:var(--surface3);color:var(--text);}
@@ -146,8 +194,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .tb-btn:disabled:hover{background:transparent;}
 .tooltip{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:10px;padding:3px 7px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:200;}
 .tb-btn:hover .tooltip{opacity:1;}
+.dropdown-content {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 12px; /* Align with the right padding of the toolbar */
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  display: none;
+  min-width: 130px;
+  z-index: 200;
+  padding: 4px;
+}
+.dropdown-item{padding:6px 12px;font-size:11px;color:var(--text);cursor:pointer;border-radius:var(--radius-sm);transition:background .1s;}
+.dropdown-item:hover{background:var(--surface3);}
 
 /* Canvas Direct Inputs */
+
 .dim-input-overlay {
     transform: translate(-50%, -50%);
     width: 42px; height: 18px;
@@ -173,51 +237,68 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 
 <!-- TOOLBAR -->
 <div id="toolbar">
+  <div class="tb-left">
   <div class="logo"><div class="logo-dot"></div>BoothCraft</div>
   <div class="tb-sep"></div>
-  <button class="tb-btn" onclick="newScene()"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 1h5L9 3.5V10H1.5V1z" stroke="currentColor" stroke-width="1.1"/><path d="M6.5 1v2.5H9" stroke="currentColor" stroke-width="1.1"/></svg>New<span class="tooltip">New Scene</span></button>
-  <button class="tb-btn" onclick="saveFile()"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 1h6.5L10 3.5V10H1V1z" stroke="currentColor" stroke-width="1.1"/><path d="M3 1v3h5V1M2.5 6h6v4H2.5z" stroke="currentColor" stroke-width="1.1"/></svg>Save<span class="tooltip">Save HTML</span></button>
-  <button class="tb-btn" onclick="exportSVG()"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v7M2.5 5l3 3 3-3M1 9h9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>Export<span class="tooltip">Export SVG</span></button>
+  <button class="tb-btn" onclick="newScene()">New</button>
+  <button class="tb-btn" onclick="saveFile()">Save</button>
   <div class="tb-sep"></div>
-  <button class="tb-btn" id="btn-undo" onclick="undo()" disabled><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 5.5A4 4 0 108 2.5M1.5 5.5V2M1.5 5.5H5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg><span class="kb">⌘Z</span><span class="tooltip">Undo</span></button>
-  <button class="tb-btn" id="btn-redo" onclick="redo()" disabled><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M9.5 5.5A4 4 0 103 2.5M9.5 5.5V2M9.5 5.5H6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg><span class="kb">⌘⇧Z</span><span class="tooltip">Redo</span></button>
-  <div class="tb-sep"></div>
-  <div style="display:flex;gap:1px;">
-    <button class="tb-btn active" id="tool-select" onclick="setTool('select')" title="Select (V)"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2 1L9.5 5.5l-4.2.8L3.5 10 2 1z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg><span class="kb">V</span><span class="tooltip">Select (V)</span></button>
-    <button class="tb-btn" id="tool-plane" onclick="setTool('plane')" title="Add Plane (P)"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><rect x="1" y="2" width="9" height="7" rx="1" stroke="currentColor" stroke-width="1.1"/></svg>Plane<span class="kb">P</span><span class="tooltip">Add Plane (P)</span></button>
-    <button class="tb-btn" id="tool-cube" onclick="setTool('cube')" title="Add Cube (C)"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1L10 3.5v5L5.5 11 1 8.5v-5L5.5 1z" stroke="currentColor" stroke-width="1.1"/><path d="M5.5 1v4.5M1 3.5l4.5 2L10 3.5" stroke="currentColor" stroke-width="1.1"/></svg>Cube<span class="kb">C</span><span class="tooltip">Add Cube (C)</span></button>
-    <button class="tb-btn" id="tool-comment" onclick="setTool('comment')" title="Comment (T)"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1 1h9v7H6L5.5 10l-.5-2H1V1z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg><span class="kb">T</span><span class="tooltip">Comment (T)</span></button>
+  <!-- Add these two buttons back so the code doesn't crash -->
+  <button class="tb-btn" id="btn-undo" onclick="undo()" disabled>Undo</button>
+  <button class="tb-btn" id="btn-redo" onclick="redo()" disabled>Redo</button>
+</div>
+
+  <div class="tb-center">
+    <!-- Center Tools -->
+    <div class="tb-group">
+      <button class="tb-btn active" id="tool-select" onclick="setTool('select')" title="Select (V)">Select</button>
+      <button class="tb-btn" id="tool-comment" onclick="setTool('comment')" title="Comment (T)">Comment</button>
+    </div>
+
+    <div class="tb-group">
+      <button class="tb-btn active" id="btn-snap" onclick="toggleSnap()">Snap</button>
+      <button class="tb-btn" id="btn-grid" onclick="toggleGrid()">Grid</button>
+    </div>
+
+    <div class="tb-group">
+      <button class="tb-btn active" id="mode-ortho" onclick="setProjMode('ortho')">Ortho</button>
+      <button class="tb-btn" id="mode-persp" onclick="setProjMode('persp')">Persp</button>
+    </div>
+
+    <div class="tb-group">
+      <button class="tb-btn" id="vb-tl" onclick="setView('tl')">TL</button>
+      <button class="tb-btn" id="vb-tr" onclick="setView('tr')">TR</button>
+      <button class="tb-btn" id="vb-front" onclick="setView('front')">Front</button>
+      <button class="tb-btn" id="vb-top" onclick="setView('top')">Top</button>
+    </div>
+
+    <div class="tb-group">
+      <button class="tb-btn active" id="unit-cm" onclick="setUnit('cm')">cm</button>
+      <button class="tb-btn" id="unit-mm" onclick="setUnit('mm')">mm</button>
+      <button class="tb-btn" id="unit-in" onclick="setUnit('in')">in</button>
+    </div>
   </div>
-  <div class="tb-sep"></div>
-  <div class="tb-group" id="view-group-1">
-    <button class="tb-btn active" id="btn-snap" onclick="toggleSnap()">Snap</button>
-    <button class="tb-btn active" id="btn-grid" onclick="toggleGrid()">Grid</button>
-    <button class="tb-btn active" id="vb-iso" onclick="setView('iso')">Isometric</button>
-  </div>
-  <div class="tb-sep"></div>
-  <div class="tb-group" id="view-group-2">
-    <button class="tb-btn" id="vb-tl" onclick="setView('tl')">Top Left</button>
-    <button class="tb-btn" id="vb-tr" onclick="setView('tr')">Top Right</button>
-    <button class="tb-btn" id="vb-front" onclick="setView('front')">Front</button>
-    <button class="tb-btn" id="vb-top" onclick="setView('top')">Top</button>
-  </div>
-  <div class="tb-sep"></div>
-  <div class="tb-group">
-    <button class="tb-btn active" id="unit-cm" onclick="setUnit('cm')">cm</button>
-    <button class="tb-btn" id="unit-mm" onclick="setUnit('mm')">mm</button>
-    <button class="tb-btn" id="unit-in" onclick="setUnit('in')">in</button>
-  </div>
+
   <div class="tb-right">
-    <button class="btn-primary" onclick="exportCapture()"><svg width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-right:3px;"><rect x="1" y="2" width="9" height="7" rx="1" stroke="white" stroke-width="1.1"/><circle cx="5.5" cy="5.5" r="1.5" stroke="white" stroke-width="1.1"/></svg>Capture</button>
+    <button class="btn-primary" onclick="toggleExportMenu(event)"><svg width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-right:3px;"><rect x="1" y="2" width="9" height="7" rx="1" stroke="white" stroke-width="1.1"/><circle cx="5.5" cy="5.5" r="1.5" stroke="white" stroke-width="1.1"/></svg>Export to ▾</button>
+    <div class="dropdown-content" id="export-menu">
+      <div class="dropdown-item" onclick="exportFormat('svg')">SVG Vector</div>
+      <div class="dropdown-item" onclick="exportFormat('png')">PNG Image</div>
+      <div class="dropdown-item" onclick="exportFormat('jpg')">JPG Image</div>
+      <div class="dropdown-item" onclick="exportFormat('webp')">WEBP Image</div>
+    </div>
   </div>
 </div>
 
 <!-- MAIN -->
 <div id="main">
   <div id="panel-left">
-    <div class="panel-header">
+    <div class="panel-header" style="gap: 4px;">
       <span class="panel-title">Layers</span>
-      <button class="tb-btn" style="margin-left:auto;height:22px;padding:0 6px;font-size:10px;" onclick="setTool('plane')">+ Plane</button>
+      <div style="margin-left:auto; display:flex; gap:2px;">
+        <button class="tb-btn" style="height:22px; padding:0 5px; font-size:10px;" onclick="setTool('plane')">+ Plane</button>
+        <button class="tb-btn" style="height:22px; padding:0 5px; font-size:10px;" onclick="setTool('cube')">+ Cube</button>
+      </div>
     </div>
     <div class="panel-scroll" id="layer-list"></div>
   </div>
@@ -246,7 +327,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <!-- SVG UI Layer (Handles, Grids, Snaplines) -->
     <svg id="iso-canvas" xmlns="http://www.w3.org/2000/svg" style="position:absolute; left:0; top:0; pointer-events:none;"></svg>
     
-    <div id="empty-hint"><h3>Your booth is empty</h3><p>Click <strong>Plane</strong> or <strong>Cube</strong> to start building<br>Hold left-click on background to orbit<br>Drop images directly onto planes/cubes</p></div>
+    <div id="empty-hint"><h3>Your booth is empty</h3><p>Click <strong>Plane</strong> or <strong>Cube</strong> to start building<br>Hold left-click on background to orbit<br>Hold Shift to select multiple objects</p></div>
     
     <div id="zoom-controls">
       <button class="zoom-btn" onclick="doZoom(-0.12)">−</button>
@@ -287,15 +368,16 @@ const SVG_NS='http://www.w3.org/2000/svg';
 // ── STATE ──────────────────────────────────────────────────────────────
 let objects=[];
 let comments=[];
-let selectedId=null;
+let selectedIds=[]; // Changed to Array for Multi-Select
 let selectedCubeFace='front';
 let tool='select';
 let unit='cm';
 let showGrid=false;
 let snapEnabled=true;
+let isPerspective=false;
 
 let camZ=Math.PI/4;
-let camX=Math.PI/6;
+let camX=0.6154797086703873; 
 let zoomS=1;
 let panX=0,panY=0;
 let idCtr=0;
@@ -303,18 +385,22 @@ let idCtr=0;
 let preDragStateStr=null;
 let hasMoved=false;
 
-let isDragging=false,dragId=null,dragSX=0,dragSY=0,dragOX=0,dragOY=0,dragOZ=0;
+let isDragging=false,dragId=null,dragSX=0,dragSY=0;
 let isPanning=false,panSX=0,panSY=0,panOX=0,panOY=0;
 let isOrbiting=false,orbitSX=0,orbitSY=0,orbitCamZ=0,orbitCamX=0;
 let orbitCenter={x:0,y:0,z:0},orbitStartProj={sx:0,sy:0},orbitPanX=0,orbitPanY=0;
 
 let isRotating=false,rotId=null,rotSA=0,rotOA=0;
-let isResizing=false,resizeNode=null,dragOW=0,dragOH=0;
-let isResizingCube=false,resizeCubeNode=null,dragOD=0;
+let isResizing=false,resizeNode=null;
+let isResizingCube=false,resizeCubeNode=null;
+
+window.dragOffsets =[];
+window.resizeOffsets = [];
 
 let ctxTarget=null;
 let undoStack=[],redoStack=[];
 let activeComment=null;
+let activeCommentId = null;
 let commentInput=null;
 let snapLines={x:null,y:null};
 let clipboard=null;
@@ -343,11 +429,22 @@ function proj(x,y,z){
   let y1=x*sinZ+y*cosZ;
   let sx=x1*CM_PX;
   let sy=(y1*sinX-z*cosX)*CM_PX;
-  return{sx,sy};
+  let sz=(y1*cosX+z*sinX)*CM_PX;
+
+  if (isPerspective) {
+    const D = 6000;
+    const scale = D / (D - sz);
+    sx *= scale;
+    sy *= scale;
+  }
+  return{sx, sy, sz};
 }
 
 function calcPtDepth(x,y,z){
-  return(x*Math.sin(camZ)+y*Math.cos(camZ))*Math.cos(camX)+z*Math.sin(camX);
+  let cosZ=Math.cos(camZ),sinZ=Math.sin(camZ);
+  let cosX=Math.cos(camX),sinX=Math.sin(camX);
+  let y1=x*sinZ+y*cosZ;
+  return (y1*cosX+z*sinX)*CM_PX; 
 }
 
 function objDepth(o){
@@ -390,7 +487,13 @@ function getParallelogramMatrix(w,h,p0,p1,p3){
   return`matrix(${a},${b},${c},${d},${p0.sx},${p0.sy})`;
 }
 
-function getWMPosDelta(dx,dy){
+function getWMPosDelta(dx,dy,sz=0){
+  if (isPerspective) {
+    const D = 6000;
+    const scale = D / (D - sz);
+    dx /= scale;
+    dy /= scale;
+  }
   let dx1=dx/CM_PX;let dy1=dy/CM_PX;
   let dwx=0,dwy=0,dwz=0;
   let sinX=Math.sin(camX),cosX=Math.cos(camX);
@@ -419,7 +522,7 @@ function getSceneCenter(){
 
 // ── SNAP ──────────────────────────────────────────────────────────────
 const SNAP_STEP=10;
-function snapV(v){return snapEnabled?Math.round(v/SNAP_STEP)*SNAP_STEP:v;}
+function snapV(v){return snapEnabled?Math.round(v/SNAP_STEP)*SNAP_STEP:r2(v);}
 function snapObj(obj){
   if(!snapEnabled)return;
   const candidates=objects.filter(o=>o.id!==obj.id&&o.visible);
@@ -431,8 +534,8 @@ function snapObj(obj){
     xs.forEach(cx=>{const d=obj.x-cx;if(Math.abs(d)<Math.abs(bestDX)){bestDX=d;snapLines.x=cx;}});
     ys.forEach(cy=>{const d=obj.y-cy;if(Math.abs(d)<Math.abs(bestDY)){bestDY=d;snapLines.y=cy;}});
   });
-  if(Math.abs(bestDX)<SNAP_STEP/2)obj.x-=Math.round(bestDX);
-  if(Math.abs(bestDY)<SNAP_STEP/2)obj.y-=Math.round(bestDY);
+  if(Math.abs(bestDX)<SNAP_STEP/2)obj.x=r2(obj.x-bestDX);
+  if(Math.abs(bestDY)<SNAP_STEP/2)obj.y=r2(obj.y-bestDY);
 }
 
 // ── UNDO/REDO ─────────────────────────────────────────────────────────
@@ -453,14 +556,14 @@ function undo(){
   redoStack.push(JSON.stringify({objects,comments}));
   const s=JSON.parse(undoStack.pop());
   objects=s.objects;comments=s.comments;idCtr=objects.reduce((m,o)=>Math.max(m,o.id),0);
-  selectedId=null;updateUndoRedo();render();updateProps();renderComments();
+  selectedIds=[];updateUndoRedo();render();updateProps();renderComments();
 }
 function redo(){
   if(!redoStack.length)return;
   undoStack.push(JSON.stringify({objects,comments}));
   const s=JSON.parse(redoStack.pop());
   objects=s.objects;comments=s.comments;idCtr=objects.reduce((m,o)=>Math.max(m,o.id),0);
-  selectedId=null;updateUndoRedo();render();updateProps();renderComments();
+  selectedIds=[];updateUndoRedo();render();updateProps();renderComments();
 }
 function updateUndoRedo(){
   document.getElementById('btn-undo').disabled=undoStack.length===0;
@@ -475,20 +578,19 @@ function render(){
   const vp=document.getElementById('viewport');
   const W=vp.clientWidth, H=vp.clientHeight;
   
-  // 1. Update CSS 3D Scene
   const camNode = document.getElementById('css-camera');
   const sceneNode = document.getElementById('css-scene');
   camNode.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomS})`;
-  sceneNode.style.transform = `rotateX(${Math.PI/2 - camX}rad) rotateZ(${camZ}rad) scale3d(${CM_PX}, ${CM_PX}, ${CM_PX})`;
+  sceneNode.style.transform = `${isPerspective ? 'perspective(6000px) ' : ''}rotateX(${Math.PI/2 - camX}rad) rotateZ(${camZ}rad) scale3d(${CM_PX}, ${CM_PX}, ${CM_PX})`;
   
   sceneNode.innerHTML = '';
   if(showGrid) {
       const grid = document.createElement('div');
       grid.style.position = 'absolute';
-      grid.style.width = '1200px';
-      grid.style.height = '1200px';
+      grid.style.width = '4800px';  // 1200 * 4
+      grid.style.height = '4800px'; // 1200 * 4
       grid.style.transformOrigin = '0 0';
-      grid.style.transform = 'translate3d(-600px, -600px, 0)';
+      grid.style.transform = 'translate3d(-2400px, -2400px, 0)'; // Half of 4800 to center it
       grid.style.backgroundImage = `linear-gradient(rgba(176,176,192,0.3) 0.5px, transparent 0.5px), linear-gradient(90deg, rgba(176,176,192,0.3) 0.5px, transparent 0.5px)`;
       grid.style.backgroundSize = '20px 20px';
       grid.style.pointerEvents = 'none';
@@ -500,7 +602,6 @@ function render(){
       else drawCssCube(sceneNode, o);
   });
 
-  // 2. Update SVG UI Overlays (Handles & Snaps)
   svg.setAttribute('width', W);
   svg.setAttribute('height', H);
   svg.innerHTML='';
@@ -510,21 +611,24 @@ function render(){
   g.setAttribute('transform',`translate(${cx},${cy}) scale(${zoomS})`);
   svg.appendChild(g);
 
-  if(selectedId){
-    const o=objects.find(o=>o.id===selectedId);
-    if(o&&o.visible){
-      if(o.type==='plane') drawHandles(g,o);
-      else drawCubeResizeDots(g,o);
-    }
+  if(selectedIds.length > 0){
+    selectedIds.forEach(id => {
+      const o=objects.find(o=>o.id===id);
+      if(o&&o.visible){
+        if(o.type==='plane') drawHandles(g,o);
+        else drawCubeResizeDots(g,o);
+      }
+    });
   }
   if(snapEnabled&&(snapLines.x!==null||snapLines.y!==null))drawSnapLines(g);
   
   updateDimInputs();
+  renderComments();
   updateLayers();
   updateStatusBar();
   
   document.getElementById('empty-hint').style.display=objects.length?'none':'block';
-  document.getElementById('vp-obj-name').textContent=selectedId?(objects.find(o=>o.id===selectedId)?.name||'Scene'):'Scene Overview';
+  document.getElementById('vp-obj-name').textContent=selectedIds.length===1?(objects.find(o=>o.id===selectedIds[0])?.name||'Scene'):(selectedIds.length>1?`${selectedIds.length} Objects Selected`:'Scene Overview');
 }
 
 function drawCssPlane(scene, p) {
@@ -573,7 +677,7 @@ function drawCssPlane(scene, p) {
         }
     }
 
-    if (p.id === selectedId) {
+    if (selectedIds.includes(p.id)) {
         div.style.boxShadow = 'inset 0 0 0 1.5px #0d99ff';
     }
 
@@ -619,14 +723,14 @@ function drawCssCube(scene, o) {
         
         face.setAttribute('data-id', o.id);
         face.setAttribute('data-type', 'cube');
-        face.setAttribute('data-face', f.name); // Store which face this is
+        face.setAttribute('data-face', f.name);
         face.style.pointerEvents = 'auto';
         face.style.cursor = tool === 'comment' ? 'crosshair' : 'move';
         
         face.addEventListener('mousedown', e => {
             if(e.button !== 0) return;
             e.stopPropagation();
-            selectedCubeFace = f.name; // Keep track of the clicked face
+            selectedCubeFace = f.name; 
             handleObjectDown(e, o.id);
         });
 
@@ -661,7 +765,7 @@ function drawCssCube(scene, o) {
             shade.style.pointerEvents = 'none';
             face.appendChild(shade);
         }
-        if (o.id === selectedId) {
+        if (selectedIds.includes(o.id)) {
             face.style.boxShadow = 'inset 0 0 0 1.5px #0d99ff';
         }
         cube.appendChild(face);
@@ -697,8 +801,9 @@ function updateDimInputs(){
     document.getElementById('viewport').appendChild(container);
   }
   let requiredInputs=[];
-  if(selectedId){
-    const o=objects.find(x=>x.id===selectedId);
+  
+  if(selectedIds.length === 1){
+    const o=objects.find(x=>x.id===selectedIds[0]);
     if(o&&o.visible){
       if(o.type==='plane'){
         const pts=planeCorners(o).map(([cx,cy,cz])=>proj(cx,cy,cz));
@@ -783,9 +888,9 @@ function updateDimInputs(){
       el.style.position='absolute';el.style.pointerEvents='auto';
       el.title=`Edit ${req.dim.toUpperCase()}`;
       el.onchange=(e)=>{
-        const o=objects.find(x=>x.id===selectedId);if(!o)return;
+        const o=objects.find(x=>x.id===selectedIds[0]);if(!o)return;
         const v=toCm(e.target.value);
-        if(!isNaN(v)&&v>0){saveState();o[req.dim]=Math.round(v);render();updateProps();}
+        if(!isNaN(v)&&v>0){saveState();o[req.dim]=r2(v);render();updateProps();}
       };
       el.onmousedown=(e)=>e.stopPropagation();
       container.appendChild(el);
@@ -810,8 +915,13 @@ function drawResizeDot(g,sx,sy,id,pIndex){
     e.stopPropagation();e.preventDefault();
     isResizing=true;resizeNode={id,pIndex};
     dragSX=e.clientX;dragSY=e.clientY;
-    const o=objects.find(o=>o.id===id);
-    dragOW=o.w;dragOH=o.h;dragOX=o.x;dragOY=o.y;dragOZ=o.z;
+    
+    // Store original sizes/positions for ALL selected objects
+    window.resizeOffsets = selectedIds.map(sid => {
+        let obj = objects.find(o=>o.id===sid);
+        return { id: sid, ow: obj.w, oh: obj.h, od: obj.d, ox: obj.x, oy: obj.y, oz: obj.z, rotZ: obj.rotZ };
+    });
+    
     preDragStateStr=JSON.stringify({objects,comments});hasMoved=false;
   });
   g.appendChild(dot);
@@ -861,8 +971,12 @@ function drawCubeResizeDots(g,o){
       e.stopPropagation();e.preventDefault();
       isResizingCube=true;resizeCubeNode={id:o.id,face:fName};
       dragSX=e.clientX;dragSY=e.clientY;
-      dragOW=o.w;dragOD=o.d;dragOH=o.h;
-      dragOX=o.x;dragOY=o.y;dragOZ=o.z;
+
+      window.resizeOffsets = selectedIds.map(sid => {
+        let obj = objects.find(ob=>ob.id===sid);
+        return { id: sid, ow: obj.w, oh: obj.h, od: obj.d, ox: obj.x, oy: obj.y, oz: obj.z, rotZ: obj.rotZ };
+      });
+
       preDragStateStr=JSON.stringify({objects,comments});hasMoved=false;
     });
     g.appendChild(circle);
@@ -946,17 +1060,24 @@ function drawCluster(g,sx,sy,p,isLeft){
     const newR=newRotZ*Math.PI/180;
     const cosOld=Math.cos(oldR),sinOld=Math.sin(oldR);
     const cosNew=Math.cos(newR),sinNew=Math.sin(newR);
-    let cornerWX,cornerWY;
-    if(isLeft){
-      cornerWX=p.x;cornerWY=p.y;
-      p.x=cornerWX;p.y=cornerWY;
-    }else{
-      cornerWX=p.x+p.w*cosOld;
-      cornerWY=p.y+p.w*sinOld;
-      p.x=cornerWX-p.w*cosNew;
-      p.y=cornerWY-p.w*sinNew;
-    }
-    p.rotZ=newRotZ;
+    
+    // Apply rotate to all selected individually based on their own corners
+    selectedIds.forEach(id => {
+        const obj = objects.find(o=>o.id===id);
+        if(!obj) return;
+        let cWX,cWY;
+        if(isLeft){
+          cWX=obj.x;cWY=obj.y;
+          obj.x=cWX;obj.y=cWY;
+        }else{
+          cWX=obj.x+obj.w*cosOld;
+          cWY=obj.y+obj.w*sinOld;
+          obj.x=cWX-obj.w*cosNew;
+          obj.y=cWY-obj.w*sinNew;
+        }
+        obj.rotZ=newRotZ;
+    });
+    
     render();updateProps();
   });
   cluster.appendChild(centerG);
@@ -979,7 +1100,7 @@ function addAdjacentWall(p,edge,angleDelta){
   }
   let np=mkPlane({x:nx,y:ny,z:p.z,w:p.w,h:p.h,axis:p.axis,color:p.color});
   np.rotZ=nZ;
-  objects.push(np);selectedId=np.id;
+  objects.push(np);selectedIds=[np.id];
   render();updateProps();
 }
 
@@ -990,7 +1111,8 @@ function drawHandles(g,o){
     let p1=pts[i],p2=pts[(i+1)%4];
     drawResizeDot(g,(p1.sx+p2.sx)/2,(p1.sy+p2.sy)/2,o.id,i+4);
   }
-  if(o.axis!=='floor'){
+  // Only show rotation and + controls if exactly ONE object is selected
+  if(o.axis!=='floor' && selectedIds.length === 1){
     drawCluster(g,pts[3].sx,pts[3].sy,o,true);
     drawCluster(g,pts[2].sx,pts[2].sy,o,false);
   }
@@ -999,13 +1121,13 @@ function drawHandles(g,o){
 function drawSnapLines(g){
   ['x','y'].forEach(axis=>{
     if(snapLines[axis]!==null){
-      const p1=proj(axis==='x'?snapLines.x:-600,axis==='y'?snapLines.y:-600,0);
-      const p2=proj(axis==='x'?snapLines.x:600,axis==='y'?snapLines.y:600,0);
+      const p1=proj(axis==='x'?snapLines.x:-2400, axis==='y'?snapLines.y:-2400, 0);
+      const p2=proj(axis==='x'?snapLines.x:2400, axis==='y'?snapLines.y:2400, 0);
       const ln=mkEl('line');
-      ln.setAttribute('x1',p1.sx);ln.setAttribute('y1',p1.sy);
-      ln.setAttribute('x2',p2.sx);ln.setAttribute('y2',p2.sy);
-      ln.setAttribute('stroke','#0d99ff');ln.setAttribute('stroke-width',0.8/zoomS);
-      ln.setAttribute('stroke-dasharray',`${4/zoomS},${3/zoomS}`);ln.setAttribute('opacity','0.5');
+      ln.setAttribute('x1',p1.sx); ln.setAttribute('y1',p1.sy);
+      ln.setAttribute('x2',p2.sx); ln.setAttribute('y2',p2.sy);
+      ln.setAttribute('stroke','#0d99ff'); ln.setAttribute('stroke-width',0.8/zoomS);
+      ln.setAttribute('stroke-dasharray',`${4/zoomS},${3/zoomS}`); ln.setAttribute('opacity','0.5');
       g.appendChild(ln);
     }
   });
@@ -1020,15 +1142,32 @@ function svgCoords(e){
 }
 
 function vpDown(e){
-  closeCtxMenu();closeCommentInput();
+  if (e.target.closest('.comment-pin')) return; 
+
+  activeCommentId = null; 
+  renderComments(); // Reset pin colors to orange
+  updateProps(); 
+  
+  closeCtxMenu();
+  if (commentInput && commentInput.contains(e.target)) return;
+  closeCommentInput();
+
   const hitNode = e.target.closest && e.target.closest('[data-id]');
-  const hit=hitNode ? hitNode.getAttribute('data-id') : null;
+  const hit = hitNode ? parseInt(hitNode.getAttribute('data-id')) : null;
+  
   if(e.button===1||(e.button===0&&e.altKey)){
     isPanning=true;panSX=e.clientX;panSY=e.clientY;panOX=panX;panOY=panY;
     e.preventDefault();return;
   }
+  
+  // Comment Tool logic - Works on objects OR empty space
+  if(tool==='comment'){
+    showCommentInput(e, hit); 
+    return;
+  }
+  
   if(e.button===0&&!hit&&tool==='select'){
-    selectedId=null;render();updateProps();
+    selectedIds=[];ctxTarget=null;render();updateProps();
     isOrbiting=true;orbitSX=e.clientX;orbitSY=e.clientY;
     orbitCamZ=camZ;orbitCamX=camX;
 	orbitCenter=getSceneCenter();
@@ -1036,30 +1175,62 @@ function vpDown(e){
     orbitPanX=panX;orbitPanY=panY;
     e.preventDefault();return;
   }
-  if(tool==='comment'){
-    if(hit){showCommentInput(e,parseInt(hit));}
-    return;
-  }
+  
   if(tool==='plane'||tool==='cube'){
     const{mx,my}=svgCoords(e);
-    let delta=getWMPosDelta(mx,my);
+    let delta=getWMPosDelta(mx,my, 0);
     const sx=snapV(delta.dwx),sy=snapV(delta.dwy),sz=snapV(delta.dwz);
     saveState();
     let o;
-    // Set rotZ explicitly to 0 instead of aligning to the camera angle
     if(tool==='plane')o=mkPlane({x:sx,y:sy,z:sz,w:100,h:250,axis:'z',rotZ:0,color:COLORS[Math.floor(Math.random()*3)+1]});
     else o=mkCube({x:sx,y:sy,z:sz,w:80,d:80,h:80,color:COLORS[1]});
-    objects.push(o);selectedId=o.id;setTool('select');render();updateProps();
+    objects.push(o);selectedIds=[o.id];setTool('select');render();updateProps();
   }
 }
-function handleObjectDown(e,id){
-  if(tool==='comment'){showCommentInput(e,id);return;}
-  selectObject(id);
-  const o=objects.find(o=>o.id===id);if(!o||o.locked)return;
-  preDragStateStr=JSON.stringify({objects,comments});
-  hasMoved=false;
-  isDragging=true;dragId=id;dragSX=e.clientX;dragSY=e.clientY;
-  dragOX=o.x;dragOY=o.y;dragOZ=o.z;
+
+function focusComment(id) {
+  activeCommentId = id;
+  renderComments(); 
+  updateProps();
+}
+
+function handleObjectDown(e, id) {
+  if (tool === 'comment') { showCommentInput(e, id); return; }
+  
+  const numericId = Number(id);
+  ctxTarget = numericId;
+
+  if (e.shiftKey || e.metaKey || e.ctrlKey) {
+    if (selectedIds.includes(numericId)) {
+      selectedIds = selectedIds.filter(i => i !== numericId);
+    } else {
+      selectedIds.push(numericId);
+    }
+  } else {
+    if (!selectedIds.includes(numericId)) {
+      selectedIds = [numericId];
+    }
+  }
+
+  const o = objects.find(obj => Number(obj.id) === numericId);
+  if (!o || o.locked) { render(); updateProps(); updateLayers(); return; }
+
+  preDragStateStr = JSON.stringify({ objects, comments });
+  hasMoved = false;
+  isDragging = false;
+  window._dragPending = true; // Flag to wait for threshold
+  dragId = numericId;
+  dragSX = e.clientX;
+  dragSY = e.clientY;
+
+  window.dragOffsets = selectedIds.map(sid => {
+    let obj = objects.find(ob => Number(ob.id) === Number(sid));
+    return { id: sid, ox: obj.x, oy: obj.y, oz: obj.z };
+  });
+
+  render();
+  updateProps();
+  updateLayers();
   e.preventDefault();
 }
 
@@ -1068,16 +1239,26 @@ function startRotate(e,id){
   const vp=document.getElementById('viewport');
   const r=vp.getBoundingClientRect();
   rotSA=Math.atan2(e.clientY-r.top-vp.clientHeight/2-panY,e.clientX-r.left-vp.clientWidth/2-panX);
-  const o=objects.find(o=>o.id===id);
-  rotOA=o.rotZ||0;
+  
+  window.resizeOffsets = selectedIds.map(sid => {
+      let obj = objects.find(o=>o.id===sid);
+      return { id: sid, rotZ: obj.rotZ||0 };
+  });
+
   preDragStateStr=JSON.stringify({objects,comments});
   hasMoved=false;e.preventDefault();
 }
 
 function vpMove(e){
-  const vp=document.getElementById('viewport');
-  const r=vp.getBoundingClientRect();
-  if(isPanning){panX=panOX+(e.clientX-panSX);panY=panOY+(e.clientY-panSY);render();return;}
+  const vp = document.getElementById('viewport');
+  if(!vp) return;
+  
+  if(isPanning){
+    panX=panOX+(e.clientX-panSX);
+    panY=panOY+(e.clientY-panSY);
+    render();return;
+  }
+  
   if(isOrbiting){
     const dx=e.clientX-orbitSX,dy=e.clientY-orbitSY;
     camZ=orbitCamZ-dx*0.01;
@@ -1086,95 +1267,179 @@ function vpMove(e){
     const newProj=proj(p.x,p.y,p.z);
     panX=orbitPanX+(orbitStartProj.sx-newProj.sx)*zoomS;
     panY=orbitPanY+(orbitStartProj.sy-newProj.sy)*zoomS;
-    document.querySelectorAll('#view-group-1 .tb-btn, #view-group-2 .tb-btn').forEach(b=>{
-      if(b.id!=='btn-snap'&&b.id!=='btn-grid')b.classList.remove('active');
-    });
     render();return;
   }
-  if(isResizing&&resizeNode){
-    hasMoved=true;
-    const o=objects.find(o=>o.id===resizeNode.id);if(!o)return;
-    const dx=(e.clientX-dragSX)/zoomS,dy=(e.clientY-dragSY)/zoomS;
-    let p0=proj(o.x,o.y,o.z);
-    let rZ=(o.rotZ||0)*Math.PI/180;
-    let pW=proj(o.x+Math.cos(rZ),o.y+Math.sin(rZ),o.z);
-    let pH=o.axis==='floor'?proj(o.x-Math.sin(rZ),o.y+Math.cos(rZ),o.z):proj(o.x,o.y,o.z+1);
-    let vecW={x:pW.sx-p0.sx,y:pW.sy-p0.sy},vecH={x:pH.sx-p0.sx,y:pH.sy-p0.sy};
-    let lenW=Math.hypot(vecW.x,vecW.y)||1,lenH=Math.hypot(vecH.x,vecH.y)||1;
-    vecW.x/=lenW;vecW.y/=lenW;vecH.x/=lenH;vecH.y/=lenH;
-    let dw=(dx*vecW.x+dy*vecW.y)/CM_PX,dh=(dx*vecH.x+dy*vecH.y)/CM_PX;
-    let factorW=[-1,1,1,-1,0,1,0,-1][resizeNode.pIndex];
-    let factorH=[-1,-1,1,1,-1,0,1,0][resizeNode.pIndex];
-    let deltaW=dw*factorW,deltaH=dh*factorH;
-    let rawW=dragOW+deltaW,rawH=dragOH+deltaH;
-    if(rawW<5)rawW=5;if(rawH<5)rawH=5;
-    let snappedW=snapEnabled?Math.max(5,snapV(rawW)):Math.round(rawW);
-    let snappedH=snapEnabled?Math.max(5,snapV(rawH)):Math.round(rawH);
-    let actualDeltaW=snappedW-dragOW,actualDeltaH=snappedH-dragOH;
-    o.w=snappedW;o.h=snappedH;
-    let shiftW=factorW===-1?-actualDeltaW:0,shiftH=factorH===-1?-actualDeltaH:0;
-    let newX=dragOX+shiftW*Math.cos(rZ),newY=dragOY+shiftW*Math.sin(rZ),newZ=dragOZ;
-    if(o.axis==='floor'){newX-=shiftH*Math.sin(rZ);newY+=shiftH*Math.cos(rZ);}else{newZ+=shiftH;}
-    o.x=snapEnabled?snapV(newX):Math.round(newX);
-    o.y=snapEnabled?snapV(newY):Math.round(newY);
-    o.z=snapEnabled?snapV(newZ):Math.round(newZ);
-    render();updateProps();return;
+
+  // THRESHOLD CHECK: Only start dragging if mouse moved > 5 pixels
+  if(window._dragPending && dragId !== null) {
+    const mdx = e.clientX - dragSX, mdy = e.clientY - dragSY;
+    if(Math.hypot(mdx, mdy) > 5) {
+      isDragging = true;
+      window._dragPending = false;
+    }
   }
+
+  if(isDragging && dragId !== null){
+    hasMoved = true;
+    const dx = (e.clientX - dragSX) / zoomS;
+    const dy = (e.clientY - dragSY) / zoomS;
+    const primaryOff = window.dragOffsets.find(off => off.id === dragId);
+    if(!primaryOff) return;
+    
+    const p0 = proj(primaryOff.ox, primaryOff.oy, primaryOff.oz);
+    let delta = getWMPosDelta(dx, dy, p0.sz);
+    
+    const primaryObj = objects.find(o => o.id === dragId);
+    let targetX = primaryOff.ox + delta.dwx;
+    let targetY = primaryOff.oy + delta.dwy;
+    let targetZ = primaryOff.oz + delta.dwz;
+
+    let dummy = { id: dragId, x: targetX, y: targetY, z: targetZ, w: primaryObj.w, h: primaryObj.h, d: primaryObj.d };
+    snapObj(dummy);
+
+    let actualDx = dummy.x - primaryOff.ox;
+    let actualDy = dummy.y - primaryOff.oy;
+    let actualDz = dummy.z - primaryOff.oz;
+
+    window.dragOffsets.forEach(off => {
+      let obj = objects.find(o => o.id === off.id);
+      if(obj) {
+        obj.x = r2(off.ox + actualDx);
+        obj.y = r2(off.oy + actualDy);
+        obj.z = r2(off.oz + actualDz);
+      }
+    });
+    render(); updateProps(); return;
+  }
+  
   if(isResizingCube&&resizeCubeNode){
     hasMoved=true;
-    const o=objects.find(o=>o.id===resizeCubeNode.id);if(!o)return;
+    const primaryOff = window.resizeOffsets.find(off=>off.id===resizeCubeNode.id);
+    if(!primaryOff) return;
     const dx=(e.clientX-dragSX)/zoomS,dy=(e.clientY-dragSY)/zoomS;
     
-    // Get X/Y floor delta
-    let{dwx,dwy}=getWMPosDelta(dx,dy);
+    const p0 = proj(primaryOff.ox, primaryOff.oy, primaryOff.oz);
+    let{dwx,dwy}=getWMPosDelta(dx,dy, p0.sz);
     
-    // Calculate true Z-axis delta from screen Y movement for Top/Btm faces
     let effectiveCosX = Math.max(0.1, Math.cos(camX));
-    let dz = -dy / (effectiveCosX * CM_PX);
+    let scale = isPerspective ? 6000 / (6000 - p0.sz) : 1;
+    let dz = -dy / (effectiveCosX * CM_PX * scale);
 
-    let rZ=(o.rotZ||0)*Math.PI/180;
+    let rZ=(primaryOff.rotZ||0)*Math.PI/180;
     let local_dwx=dwx*Math.cos(rZ)+dwy*Math.sin(rZ);
     let local_dwy=-dwx*Math.sin(rZ)+dwy*Math.cos(rZ);
-    const sv=v=>snapEnabled?Math.max(5,snapV(v)):Math.max(5,Math.round(v));
-    const svd=v=>snapEnabled?snapV(v):Math.round(v);
+    const sv=v=>snapEnabled?Math.max(5,snapV(v)):Math.max(5,r2(v));
     
-    if(resizeCubeNode.face==='top'){o.h=sv(dragOH+dz);}
-    else if(resizeCubeNode.face==='btm'){let raw=dragOH-dz;if(raw>=5){o.z=svd(dragOZ+dz);o.h=sv(raw);}}
-    else if(resizeCubeNode.face==='right'){o.w=sv(dragOW+local_dwx);}
-    else if(resizeCubeNode.face==='left'){let raw=dragOW-local_dwx;if(raw>=5){o.x=svd(dragOX+local_dwx*Math.cos(rZ));o.y=svd(dragOY+local_dwx*Math.sin(rZ));o.w=sv(raw);}}
-    else if(resizeCubeNode.face==='front'){o.d=sv(dragOD+local_dwy);}
-    else if(resizeCubeNode.face==='back'){let raw=dragOD-local_dwy;if(raw>=5){o.x=svd(dragOX-local_dwy*Math.sin(rZ));o.y=svd(dragOY+local_dwy*Math.cos(rZ));o.d=sv(raw);}}
-    
+    let actualDz = 0, actualLocalDwx = 0, actualLocalDwy = 0;
+
+    if(resizeCubeNode.face==='top'){ actualDz = sv(primaryOff.oh+dz) - primaryOff.oh; }
+    else if(resizeCubeNode.face==='btm'){ let raw=primaryOff.oh-dz; if(raw>=5){ actualDz = - (sv(raw) - primaryOff.oh); } }
+    else if(resizeCubeNode.face==='right'){ actualLocalDwx = sv(primaryOff.ow+local_dwx) - primaryOff.ow; }
+    else if(resizeCubeNode.face==='left'){ let raw=primaryOff.ow-local_dwx; if(raw>=5){ actualLocalDwx = - (sv(raw) - primaryOff.ow); } }
+    else if(resizeCubeNode.face==='front'){ actualLocalDwy = sv(primaryOff.od+local_dwy) - primaryOff.od; }
+    else if(resizeCubeNode.face==='back'){ let raw=primaryOff.od-local_dwy; if(raw>=5){ actualLocalDwy = - (sv(raw) - primaryOff.od); } }
+
+    window.resizeOffsets.forEach(off => {
+        let obj = objects.find(ob=>ob.id===off.id);
+        if(obj) {
+            let rZ_obj = (obj.rotZ||0)*Math.PI/180;
+            if(resizeCubeNode.face==='top'){ obj.h = r2(off.oh + actualDz); }
+            else if(resizeCubeNode.face==='btm'){ obj.z = r2(off.oz - actualDz); obj.h = r2(off.oh + actualDz); }
+            else if(resizeCubeNode.face==='right'){ obj.w = r2(off.ow + actualLocalDwx); }
+            else if(resizeCubeNode.face==='left'){ obj.x = r2(off.ox - actualLocalDwx*Math.cos(rZ_obj)); obj.y = r2(off.oy - actualLocalDwx*Math.sin(rZ_obj)); obj.w = r2(off.ow + actualLocalDwx); }
+            else if(resizeCubeNode.face==='front'){ obj.d = r2(off.od + actualLocalDwy); }
+            else if(resizeCubeNode.face==='back'){ obj.x = r2(off.ox + actualLocalDwy*Math.sin(rZ_obj)); obj.y = r2(off.oy - actualLocalDwy*Math.cos(rZ_obj)); obj.d = r2(off.od + actualLocalDwy); }
+        }
+    });
+
     render();updateProps();return;
   }
-  if(isDragging&&dragId!==null){
-    hasMoved=true;
-    const dx=(e.clientX-dragSX)/zoomS,dy=(e.clientY-dragSY)/zoomS;
-    const o=objects.find(o=>o.id===dragId);if(!o)return;
-    let delta=getWMPosDelta(dx,dy);
-    o.x=Math.round(dragOX+delta.dwx);
-    o.y=Math.round(dragOY+delta.dwy);
-    o.z=Math.round(dragOZ+delta.dwz);
-    snapObj(o);render();updateProps();return;
+  
+  // Only start dragging if mouse moves more than 5 pixels
+  if(window._dragPending && dragId !== null) {
+    const mdx = e.clientX - dragSX, mdy = e.clientY - dragSY;
+    if(Math.hypot(mdx, mdy) > 5) {
+      isDragging = true;
+      window._dragPending = false;
+    }
+  }
+
+  if(isDragging && dragId !== null){
+    hasMoved = true;
+    const dx = (e.clientX - dragSX) / zoomS;
+    const dy = (e.clientY - dragSY) / zoomS;
+    
+    const primaryOff = window.dragOffsets.find(off => off.id === dragId);
+    if(!primaryOff) return;
+    
+    const p0 = proj(primaryOff.ox, primaryOff.oy, primaryOff.oz);
+    let delta = getWMPosDelta(dx, dy, p0.sz);
+    
+    // Calculate snapped movement for the primary object
+    let targetX = primaryOff.ox + delta.dwx;
+    let targetY = primaryOff.oy + delta.dwy;
+    let targetZ = primaryOff.oz + delta.dwz;
+
+    const primaryObj = objects.find(o => o.id === dragId);
+    let dummy = { id: dragId, x: targetX, y: targetY, z: targetZ, w: primaryObj.w, h: primaryObj.h, d: primaryObj.d };
+    snapObj(dummy);
+
+    let actualDx = dummy.x - primaryOff.ox;
+    let actualDy = dummy.y - primaryOff.oy;
+    let actualDz = dummy.z - primaryOff.oz;
+
+    // Apply movement to all selected objects
+    window.dragOffsets.forEach(off => {
+        let obj = objects.find(o => o.id === off.id);
+        if(obj) {
+            obj.x = r2(off.ox + actualDx);
+            obj.y = r2(off.oy + actualDy);
+            obj.z = r2(off.oz + actualDz);
+        }
+    });
+    
+    render();
+    updateProps();
+    return;
   }
   if(isRotating&&rotId!==null){
     hasMoved=true;
     const a=Math.atan2(e.clientY-r.top-vp.clientHeight/2-panY,e.clientX-r.left-vp.clientWidth/2-panX);
     const delta=(a-rotSA)*180/Math.PI;
-    const o=objects.find(o=>o.id===rotId);if(!o)return;
-    o.rotZ=Math.round(rotOA+delta);render();updateProps();
+    
+    window.resizeOffsets.forEach(off => { 
+        let obj = objects.find(ob=>ob.id===off.id);
+        if(obj) obj.rotZ = r2(off.rotZ + delta);
+    });
+    render();updateProps();
   }
 }
 
-function vpUp(e){
-  if((isDragging||isResizing||isResizingCube||isRotating)&&hasMoved){pushPreDragState();}
-  preDragStateStr=null;hasMoved=false;
-  isPanning=false;isDragging=false;dragId=null;
-  isOrbiting=false;isResizing=false;resizeNode=null;
-  isResizingCube=false;resizeCubeNode=null;
-  isRotating=false;rotId=null;
-  snapLines={x:null,y:null};
+function vpUp(e) {
+  if ((isDragging || isResizing || isResizingCube || isRotating) && hasMoved) {
+    pushPreDragState();
+  }
+  isDragging = false;
+  dragId = null;
+  window._dragPending = false;
+  isPanning = false;
+  isOrbiting = false;
+  isResizing = false;
+  isResizingCube = false;
+  isRotating = false;
+  snapLines = { x: null, y: null };
+  render();
 }
+
+
+window.addEventListener('mousemove', e => {
+  const vp = document.getElementById('viewport');
+  if(vp) vpMove(e);
+});
+window.addEventListener('mouseup', e => {
+  const vp = document.getElementById('viewport');
+  if(vp) vpUp(e);
+});
 
 function vpWheel(e){
   e.preventDefault();
@@ -1195,15 +1460,20 @@ async function processAndSetImage(file, o, callback, face = null){
   function canvasToWebp(canvas){return canvas.toDataURL('image/webp',0.85);}
   
   const applyToObj = (webp) => {
-      if (o.type === 'cube' && face) {
-          if(!o.images) o.images = {};
-          if(!o.imgOpts) o.imgOpts = {};
-          o.images[face] = webp;
-          o.imgOpts[face] = {flipH:false, flipV:false, rot:0, fit:'fill'};
-      } else {
-          o.image = webp;
-          o.imgOpts={...o.imgOpts,flipV:false};
-      }
+      // If multiple selected, apply texture to all!
+      selectedIds.forEach(id => {
+          let ob = objects.find(x=>x.id===id);
+          if(!ob) return;
+          if (ob.type === 'cube' && face) {
+              if(!ob.images) ob.images = {};
+              if(!ob.imgOpts) ob.imgOpts = {};
+              ob.images[face] = webp;
+              ob.imgOpts[face] = {flipH:false, flipV:false, rot:0, fit:'fill'};
+          } else {
+              ob.image = webp;
+              ob.imgOpts={...ob.imgOpts,flipV:false};
+          }
+      });
   };
 
   function resizeAndSet(imgEl){
@@ -1256,10 +1526,13 @@ function vpDrop(e){
   const files=e.dataTransfer.files;if(!files.length)return;
   const file=files[0];
   const hitNode = e.target.closest && e.target.closest('[data-id]');
-  const tId = hitNode ? hitNode.getAttribute('data-id') : null;
+  const tId = hitNode ? parseInt(hitNode.getAttribute('data-id')) : null;
   const face = hitNode ? hitNode.getAttribute('data-face') : null;
-  const o=tId?objects.find(o=>o.id==tId):(selectedId?objects.find(o=>o.id===selectedId):null);
+  
+  const o=tId?objects.find(o=>o.id==tId):(selectedIds.length?objects.find(o=>o.id===selectedIds[0]):null);
   if(!o)return;
+  
+  if(!selectedIds.includes(o.id)) selectObject(o.id, false);
   
   if(o.type === 'cube' && face) selectedCubeFace = face;
   
@@ -1268,86 +1541,200 @@ function vpDrop(e){
 
 function loadImageFile(input){
   const file=input.files[0];if(!file)return;
-  const o=objects.find(o=>o.id===selectedId);if(!o)return;
+  const o=objects.find(o=>o.id===selectedIds[0]);if(!o)return;
   processAndSetImage(file,o,()=>{saveState();render();updateProps();});
 }
 
 function loadCubeImageFile(input){
   const file=input.files[0];if(!file)return;
-  const o=objects.find(o=>o.id===selectedId);if(!o||o.type!=='cube')return;
+  const o=objects.find(o=>o.id===selectedIds[0]);if(!o||o.type!=='cube')return;
   processAndSetImage(file,o,()=>{saveState();render();updateProps();}, selectedCubeFace);
 }
 
 // ── COMMENTS ──────────────────────────────────────────────────────────
-function showCommentInput(e,planeId){
+function showCommentInput(e, objId){
+  if(!objId) return; // Comments must now be attached to an object
   closeCommentInput();
   const vp=document.getElementById('viewport');
   const r=vp.getBoundingClientRect();
-  const cx=e.clientX-r.left,cy=e.clientY-r.top;
+  
+  // Capture local coordinates on the 3D surface
+  const lx = e.offsetX;
+  const ly = e.offsetY;
+  const face = e.target.getAttribute('data-face') || null;
+
   const div=document.createElement('div');
   div.className='comment-input-bubble';
-  div.style.left=cx+'px';div.style.top=cy+'px';
-  div.innerHTML=`<textarea placeholder="Add a comment…" id="cmt-ta"></textarea>
+  div.style.left=(e.clientX - r.left)+'px'; div.style.top=(e.clientY - r.top)+'px';
+  div.style.zIndex = "2000";
+
+  div.innerHTML=`<textarea placeholder="Add a comment to this surface…" id="cmt-ta"></textarea>
     <div style="display:flex;gap:4px;margin-top:6px;justify-content:flex-end;">
       <button class="btn-secondary" style="height:24px;font-size:10px;" onclick="closeCommentInput()">Cancel</button>
-      <button class="btn-primary" style="height:24px;font-size:10px;" onclick="submitComment(${planeId},${cx},${cy})">Post</button>
+      <button class="btn-primary" style="height:24px;font-size:10px;" id="post-cmt-btn">Post</button>
     </div>`;
-  vp.appendChild(div);commentInput=div;
-  div.addEventListener('click',e=>e.stopPropagation());
-  setTimeout(()=>document.getElementById('cmt-ta')&&document.getElementById('cmt-ta').focus(),50);
+  
+  vp.appendChild(div);
+  commentInput=div;
+  document.getElementById('post-cmt-btn').onclick = () => submitComment(objId, lx, ly, face);
+  div.addEventListener('mousedown', e=>e.stopPropagation());
+  setTimeout(()=>document.getElementById('cmt-ta').focus(),50);
 }
 
-function closeCommentInput(){if(commentInput){commentInput.remove();commentInput=null;}}
+function closeCommentInput(){
+  if(commentInput){
+    commentInput.remove();
+    commentInput=null;
+    // Clear highlights and ghost pin
+    document.querySelectorAll('.comment-target-highlight').forEach(el => el.classList.remove('comment-target-highlight'));
+    const ghost = document.getElementById('comment-ghost');
+    if(ghost) ghost.style.display = 'none';
+  }
+}
 
-function submitComment(planeId,cx,cy){
-  const ta=document.getElementById('cmt-ta');if(!ta)return;
-  const txt=ta.value.trim();if(!txt)return;
-  comments.push({id:++idCtr,planeId,x:cx,y:cy,text:txt,author:'You',
-    time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+function submitComment(objId, lx, ly, face){
+  const ta=document.getElementById('cmt-ta');
+  const txt=ta ? ta.value.trim() : "";
+  if(!txt) return;
+  
+  const newCmtId = ++idCtr;
+  comments.push({
+    id: newCmtId,
+    objId: objId,
+    face: face,
+    lx: lx, 
+    ly: ly,
+    text: txt,
+    author: 'You',
+    time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+  });
+  
+  // 1. Set the new comment as active and clear object selections
+  activeCommentId = newCmtId;
+  selectedIds = []; 
+
+  // 2. Cleanup the UI
   closeCommentInput();
-  selectedId=null;
-  renderComments();updateProps();updateLayers();
+  document.querySelectorAll('.comment-target-highlight').forEach(el => el.classList.remove('comment-target-highlight'));
+  setTool('select');
+  
+  // 3. FORCE REFRESH EVERYTHING NOW
+  render();        // Redraws the 3D scene and pins
+  updateProps();   // Redraws the Sidebar cards immediately
+  updateLayers();  // Refreshes the layer list selection state
+
+  // 4. Smooth scroll to the new card in the sidebar
+  setTimeout(() => {
+    const card = document.getElementById(`cmt-card-${newCmtId}`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 100);
 }
 
 function renderComments(){
   document.querySelectorAll('.comment-pin').forEach(e=>e.remove());
   comments.forEach(c=>{
+    const obj = objects.find(o => o.id === c.objId);
+    if(!obj || !obj.visible) return;
+
+    let worldX, worldY, worldZ;
+    const rad = (obj.rotZ || 0) * Math.PI / 180;
+    const cos = Math.cos(rad), sin = Math.sin(rad);
+    if(obj.type === 'plane') {
+        if(obj.axis === 'floor') {
+            worldX = obj.x + c.lx * cos - c.ly * sin;
+            worldY = obj.y + c.lx * sin + c.ly * cos;
+            worldZ = obj.z;
+        } else {
+            worldX = obj.x + c.lx * cos;
+            worldY = obj.y + c.lx * sin;
+            worldZ = obj.z + (obj.h - c.ly);
+        }
+    } else {
+        const faces = {
+            'top':   [obj.x + c.lx*cos - c.ly*sin, obj.y + c.lx*sin + c.ly*cos, obj.z + obj.h],
+            'btm':   [obj.x + c.lx*cos - c.ly*sin, obj.y + c.lx*sin + c.ly*cos, obj.z],
+            'front': [obj.x + c.lx*cos - obj.d*sin, obj.y + c.lx*sin + obj.d*cos, obj.z + (obj.h - c.ly)],
+            'back':  [obj.x + c.lx*cos, obj.y + c.lx*sin, obj.z + (obj.h - c.ly)],
+            'left':  [obj.x - c.ly*sin, obj.y + c.ly*cos, obj.z + (obj.h - c.lx)],
+            'right': [obj.x + obj.w*cos - c.ly*sin, obj.y + obj.w*sin + c.ly*cos, obj.z + (obj.h - c.lx)]
+        };
+        const pt = faces[c.face || 'front'];
+        worldX = pt[0]; worldY = pt[1]; worldZ = pt[2];
+    }
+
+    const p = proj(worldX, worldY, worldZ);
+    const vp = document.getElementById('viewport');
+    const cx = vp.clientWidth/2 + panX + p.sx * zoomS;
+    const cy = vp.clientHeight/2 + panY + p.sy * zoomS;
+
     const pin=document.createElement('div');
-    pin.className='comment-pin';pin.style.left=c.x+'px';pin.style.top=c.y+'px';
-    pin.setAttribute('data-cid',c.id);
-    pin.innerHTML=`<svg width="24" height="28" viewBox="0 0 24 28" fill="none"><path d="M12 0C5.4 0 0 5.4 0 12c0 7.2 12 16 12 16s12-8.8 12-16C24 5.4 18.6 0 12 0z" fill="#f59e0b"/><circle cx="12" cy="11" r="4" fill="white"/></svg>`;
-    pin.addEventListener('click',e=>{e.stopPropagation();toggleCommentBubble(c,pin);});
-    document.getElementById('viewport').appendChild(pin);
+    pin.className='comment-pin'; pin.style.left=cx+'px'; pin.style.top=cy+'px';
+    
+    // CHANGE COLOR BASED ON STATE
+    const isActive = c.id === activeCommentId;
+    const color = isActive ? '#0d99ff' : '#f59e0b';
+    const scale = isActive ? 'scale(1.2)' : 'scale(1)';
+    pin.style.transform = `translate(-50%, -100%) ${scale}`;
+
+    pin.innerHTML = `
+      <svg width="24" height="28" viewBox="0 0 24 28" fill="none" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2))">
+        <path d="M12 0C5.4 0 0 5.4 0 12c0 7.2 12 16 12 16s12-8.8 12-16C24 5.4 18.6 0 12 0z" fill="${color}"/>
+        <circle cx="12" cy="11" r="3.5" fill="white"/>
+      </svg>`;
+
+    pin.onclick = (e) => { 
+      e.stopPropagation();
+      e.preventDefault();
+      toggleCommentBubble(c, pin); 
+    };
+    vp.appendChild(pin);
   });
 }
 
 let activeBubble=null;
-function toggleCommentBubble(c,pinEl){
-  if(activeBubble){activeBubble.remove();activeBubble=null;if(activeBubble&&activeBubble._cid===c.id)return;}
-  const bub=document.createElement('div');bub.className='comment-bubble';
-  bub.style.left=(parseInt(pinEl.style.left)+16)+'px';bub.style.top=pinEl.style.top+'px';
-  bub._cid=c.id;
-  bub.innerHTML=`<div class="comment-author">${c.author}</div><div class="comment-text">${c.text}</div><div class="comment-time">${c.time} · <span style="cursor:pointer;color:var(--red);" onclick="deleteComment(${c.id})">Delete</span></div>`;
-  document.getElementById('viewport').appendChild(bub);activeBubble=bub;
-  bub.addEventListener('click',e=>e.stopPropagation());
+function toggleCommentBubble(c, pinEl) {
+  activeCommentId = c.id;
+
+  if (selectedIds.length > 0) {
+    selectedIds = [];
+    updateLayers();
+    render(); 
+  }
+  
+  // Refresh colors on all pins and update sidebar highlight
+  renderComments(); 
+  updateProps();
+
+  setTimeout(() => {
+    const card = document.getElementById(`cmt-card-${c.id}`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 100);
 }
 
 function deleteComment(id){
-  comments=comments.filter(c=>c.id!==id);
-  if(activeBubble){activeBubble.remove();activeBubble=null;}
-  renderComments();updateProps();
+  saveState();
+  comments = comments.filter(c => c.id !== id);
+  if(activeBubble) { activeBubble.remove(); activeBubble = null; }
+  renderComments();
+  updateProps();
 }
 
 // ── FORMATTING ────────────────────────────────────────────────────────
+function r2(v) { return Math.round(v * 100) / 100; }
+
 function formatDim(cm){
-  if(unit==='cm')return Math.round(cm)+'cm';
-  if(unit==='mm')return Math.round(cm*10)+'mm';
-  return Math.round(cm/2.54)+'"';
+  if(unit==='cm')return r2(cm)+'cm';
+  if(unit==='mm')return r2(cm*10)+'mm';
+  return r2(cm/2.54)+'"';
 }
 function formatDimRaw(cm){
-  if(unit==='cm')return Math.round(cm);
-  if(unit==='mm')return Math.round(cm*10);
-  return Math.round(cm/2.54);
+  if(unit==='cm')return r2(cm);
+  if(unit==='mm')return r2(cm*10);
+  return r2(cm/2.54);
 }
 function toCm(v){
   if(unit==='cm')return parseFloat(v);
@@ -1355,32 +1742,77 @@ function toCm(v){
   return parseFloat(v)*2.54;
 }
 
-function selectObject(id){selectedId=id;render();updateProps();updateLayers();}
+function selectObject(id, multi = false) {
+  const numericId = Number(id);
+  if (multi) {
+    if (selectedIds.includes(numericId)) {
+      selectedIds = selectedIds.filter(i => i !== numericId);
+    } else {
+      selectedIds.push(numericId);
+    }
+  } else {
+    selectedIds = [numericId];
+  }
+  
+  // Sync the context target to the primary selection
+  ctxTarget = selectedIds.length > 0 ? selectedIds[0] : null;
+  
+  render();
+  updateProps();
+  updateLayers();
+}
 
 // ── PROPERTIES ────────────────────────────────────────────────────────
 function updateProps(){
   const el=document.getElementById('props-content');
   const rt=document.getElementById('right-panel-title');
-  if(!selectedId){
+  if(!selectedIds.length){
     rt.textContent='Comments';
     if(comments.length===0){
       el.innerHTML='<div style="padding:24px 12px;text-align:center;color:var(--text3);font-size:11px;line-height:1.7;">Select an object to edit<br>or use the Comment tool<br>to annotate</div>';
-    }else{
-      el.innerHTML=`<div class="section"><div class="section-label">${comments.length} Comment${comments.length!==1?'s':''}</div>${comments.map(c=>`
-        <div style="padding:8px 12px;border-bottom:1px solid var(--border);">
-          <div style="font-size:10px;font-weight:600;color:var(--orange);margin-bottom:3px;">${c.author} · ${c.time}</div>
-          <div style="font-size:11px;color:var(--text);line-height:1.5;">${c.text}</div>
-          <div style="margin-top:4px;"><span style="font-size:10px;color:var(--text3);cursor:pointer;" onclick="deleteComment(${c.id})">Delete</span></div>
-        </div>`).join('')}</div>`;
+    } else {
+      el.innerHTML = `<div class="section"><div class="section-label">${comments.length} Comment${comments.length!==1?'s':''}</div>${comments.map(c=>{
+          const attachedObj = objects.find(o => o.id === c.objId);
+          const objName = attachedObj ? attachedObj.name : 'Unknown Object';
+          // CHECK IF HIGHLIGHTED HERE:
+          const isHighlighted = (activeCommentId === c.id) ? 'comment-card-highlight' : '';
+          
+          return `<div id="cmt-card-${c.id}" class="${isHighlighted}" style="padding:10px 12px; border-bottom:1px solid var(--border); transition: background 0.3s; cursor:pointer;" onclick="focusComment(${c.id})">
+            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:4px;">
+              <div style="font-size:10px; font-weight:600; color:var(--orange);">${c.author}</div>
+              <div style="font-size:9px; color:var(--text3); background:var(--surface3); padding:1px 4px; border-radius:2px;">${objName}</div>
+            </div>
+            <div style="font-size:11px; color:var(--text); line-height:1.5;">${c.text}</div>
+            <div style="margin-top:6px; display:flex; gap:8px; align-items:center;">
+              <span style="font-size:9px; color:var(--text3);">${c.time}</span>
+              <span style="font-size:10px; color:var(--red); cursor:pointer; opacity:0.7;" onclick="event.stopPropagation(); deleteComment(${c.id})">Delete</span>
+            </div>
+          </div>`;
+      }).join('')}</div>`;
     }
     return;
   }
-  const o=objects.find(o=>o.id===selectedId);
-  if(!o){
-    rt.textContent='Properties';
-    el.innerHTML='<div style="padding:24px 12px;text-align:center;color:var(--text3);font-size:11px;">Select an object</div>';
-    return;
+  
+  if(selectedIds.length > 1) {
+      rt.textContent='Multiple Objects';
+      el.innerHTML=`
+        <div class="section">
+          <div style="padding:12px; text-align:center;">
+            <div style="font-size:14px; font-weight:600; color:var(--text);">${selectedIds.length} Objects Selected</div>
+            <div style="font-size:11px; color:var(--text3); margin-top:4px; line-height:1.4;">Drag together to move.<br>Use handles on one object to resize all simultaneously.</div>
+          </div>
+        </div>
+        <div class="section"><div class="section-label">Fill (Apply to all)</div>
+          <div class="color-grid">${COLORS.map(c=>`<div class="cswatch" style="background:${c};" onclick="setProp('color','${c}')"></div>`).join('')}<div class="color-input-wrap"><input type="color" value="#cccccc" onchange="setProp('color',this.value)"><div class="cc-preview">+</div></div></div>
+        </div>
+        <div class="section">
+          <div style="padding:6px 12px;"><button class="btn-secondary" style="width:100%;height:26px;font-size:11px;color:var(--red);border-color:rgba(239,68,68,.3);" onclick="ctxDelete()">Delete Selected</button></div>
+        </div>
+      `;
+      return;
   }
+  
+  const o=objects.find(o=>o.id===selectedIds[0]);
   rt.textContent='Properties';
   if(o.type==='plane')renderPlaneProps(el,o);else renderCubeProps(el,o);
 }
@@ -1389,14 +1821,14 @@ function renderPlaneProps(el,p){
   el.innerHTML=`
   <div class="section"><div class="section-label">Name</div><div class="prop-row"><input class="prop-input" value="${p.name}" onchange="setProp('name',this.value)" style="flex:1;"></div></div>
   <div class="section"><div class="section-label">Size</div>
-    <div class="prop-row"><span class="prop-label">W</span><input class="prop-input" type="number" value="${formatDimRaw(p.w)}" onchange="setPropDim('w',this.value)"><span class="prop-unit">${unit}</span></div>
-    <div class="prop-row"><span class="prop-label">H</span><input class="prop-input" type="number" value="${formatDimRaw(p.h)}" onchange="setPropDim('h',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">W</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(p.w)}" onchange="setPropDim('w',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">H</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(p.h)}" onchange="setPropDim('h',this.value)"><span class="prop-unit">${unit}</span></div>
   </div>
   <div class="section"><div class="section-label">Position & Rot</div>
-    <div class="prop-row"><span class="prop-label">X</span><input class="prop-input" type="number" value="${formatDimRaw(p.x)}" onchange="setPropXYZ('x',this.value)"><span class="prop-unit">${unit}</span></div>
-    <div class="prop-row"><span class="prop-label">Y</span><input class="prop-input" type="number" value="${formatDimRaw(p.y)}" onchange="setPropXYZ('y',this.value)"><span class="prop-unit">${unit}</span></div>
-    <div class="prop-row"><span class="prop-label">Z</span><input class="prop-input" type="number" value="${formatDimRaw(p.z)}" onchange="setPropXYZ('z',this.value)"><span class="prop-unit">${unit}</span></div>
-    <div class="prop-row"><span class="prop-label">Rot Z</span><input class="prop-input" type="number" value="${Math.round(p.rotZ||0)}" onchange="setPropRotZ(this.value)"><span class="prop-unit">deg</span></div>
+    <div class="prop-row"><span class="prop-label">X</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(p.x)}" onchange="setPropXYZ('x',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">Y</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(p.y)}" onchange="setPropXYZ('y',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">Z</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(p.z)}" onchange="setPropXYZ('z',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">Rot Z</span><input class="prop-input" type="number" step="any" value="${r2(p.rotZ||0)}" onchange="setPropRotZ(this.value)"><span class="prop-unit">deg</span></div>
   </div>
   <div class="section"><div class="section-label">Orientation</div>
     <div style="display:flex;gap:3px;padding:4px 12px;">
@@ -1429,15 +1861,15 @@ function renderCubeProps(el,o){
   el.innerHTML=`
   <div class="section"><div class="section-label">Name</div><div class="prop-row"><input class="prop-input" value="${o.name}" onchange="setProp('name',this.value)" style="flex:1;"></div></div>
   <div class="section"><div class="section-label">Size</div>
-    <div class="prop-row"><span class="prop-label">W</span><input class="prop-input" type="number" value="${formatDimRaw(o.w)}" onchange="setCubeDim('w',this.value)"><span class="prop-unit">${unit}</span></div>
-    <div class="prop-row"><span class="prop-label">D</span><input class="prop-input" type="number" value="${formatDimRaw(o.d)}" onchange="setCubeDim('d',this.value)"><span class="prop-unit">${unit}</span></div>
-    <div class="prop-row"><span class="prop-label">H</span><input class="prop-input" type="number" value="${formatDimRaw(o.h)}" onchange="setCubeDim('h',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">W</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(o.w)}" onchange="setCubeDim('w',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">D</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(o.d)}" onchange="setCubeDim('d',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">H</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(o.h)}" onchange="setCubeDim('h',this.value)"><span class="prop-unit">${unit}</span></div>
   </div>
   <div class="section"><div class="section-label">Position & Rot</div>
-    <div class="prop-row"><span class="prop-label">X</span><input class="prop-input" type="number" value="${formatDimRaw(o.x)}" onchange="setPropXYZ('x',this.value)"><span class="prop-unit">${unit}</span></div>
-    <div class="prop-row"><span class="prop-label">Y</span><input class="prop-input" type="number" value="${formatDimRaw(o.y)}" onchange="setPropXYZ('y',this.value)"><span class="prop-unit">${unit}</span></div>
-    <div class="prop-row"><span class="prop-label">Z</span><input class="prop-input" type="number" value="${formatDimRaw(o.z)}" onchange="setPropXYZ('z',this.value)"><span class="prop-unit">${unit}</span></div>
-    <div class="prop-row"><span class="prop-label">Rot Z</span><input class="prop-input" type="number" value="${Math.round(o.rotZ||0)}" onchange="setPropRotZ(this.value)"><span class="prop-unit">deg</span></div>
+    <div class="prop-row"><span class="prop-label">X</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(o.x)}" onchange="setPropXYZ('x',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">Y</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(o.y)}" onchange="setPropXYZ('y',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">Z</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(o.z)}" onchange="setPropXYZ('z',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">Rot Z</span><input class="prop-input" type="number" step="any" value="${r2(o.rotZ||0)}" onchange="setPropRotZ(this.value)"><span class="prop-unit">deg</span></div>
   </div>
   <div class="section"><div class="section-label">Fill (Solid Base)</div>
     <div class="color-grid">${COLORS.map(c=>`<div class="cswatch ${o.color===c?'active':''}" style="background:${c};" onclick="setProp('color','${c}')"></div>`).join('')}<div class="color-input-wrap"><input type="color" value="${o.color}" onchange="setProp('color',this.value)"><div class="cc-preview">+</div></div></div>
@@ -1464,18 +1896,28 @@ function renderCubeProps(el,o){
   </div>`;
 }
 
-function setProp(key,val){const o=objects.find(o=>o.id===selectedId);if(!o)return;o[key]=val;render();updateProps();}
-function setPropDim(dim,val){const o=objects.find(o=>o.id===selectedId);if(!o)return;const n=toCm(val);if(isNaN(n)||n<=0)return;saveState();o[dim]=Math.round(n);render();}
-function setPropXYZ(axis,val){const o=objects.find(o=>o.id===selectedId);if(!o)return;const n=toCm(val);if(isNaN(n))return;saveState();o[axis]=Math.round(n);render();updateProps();}
-function setCubeDim(dim,val){const o=objects.find(o=>o.id===selectedId);if(!o||o.type!=='cube')return;const n=toCm(val);if(isNaN(n)||n<=0)return;saveState();o[dim]=Math.round(n);render();}
-function setAxis(a){const o=objects.find(o=>o.id===selectedId);if(!o)return;saveState();o.axis=a;render();updateProps();}
-function setImgOpt(k,v){const o=objects.find(o=>o.id===selectedId);if(!o)return;if(!o.imgOpts)o.imgOpts={};o.imgOpts[k]=v;render();updateProps();}
-function setPropRotZ(val){const o=objects.find(o=>o.id===selectedId);if(!o)return;const n=parseFloat(val);if(isNaN(n))return;saveState();o.rotZ=n;render();updateProps();}
+function setProp(key,val){saveState();selectedIds.forEach(id=>{let o=objects.find(o=>o.id===id);if(o)o[key]=val;});render();updateProps();}
+function setPropDim(dim,val){const n=toCm(val);if(isNaN(n)||n<=0)return;saveState();selectedIds.forEach(id=>{let o=objects.find(o=>o.id===id);if(o)o[dim]=r2(n);});render();}
+function setPropXYZ(axis,val){const n=toCm(val);if(isNaN(n))return;saveState();selectedIds.forEach(id=>{let o=objects.find(o=>o.id===id);if(o)o[axis]=r2(n);});render();updateProps();}
+function setCubeDim(dim,val){const n=toCm(val);if(isNaN(n)||n<=0)return;saveState();selectedIds.forEach(id=>{let o=objects.find(o=>o.id===id);if(o&&o.type==='cube')o[dim]=r2(n);});render();}
+function setAxis(a){saveState();selectedIds.forEach(id=>{let o=objects.find(o=>o.id===id);if(o)o.axis=a;});render();updateProps();}
+function setImgOpt(k,v){saveState();selectedIds.forEach(id=>{let o=objects.find(o=>o.id===id);if(o){if(!o.imgOpts)o.imgOpts={};o.imgOpts[k]=v;}});render();updateProps();}
+function setPropRotZ(val){const n=parseFloat(val);if(isNaN(n))return;saveState();selectedIds.forEach(id=>{let o=objects.find(o=>o.id===id);if(o)o.rotZ=r2(n);});render();updateProps();}
 function setCubeImgOpt(k,v,remove=false){
-  const o=objects.find(o=>o.id===selectedId);if(!o||o.type!=='cube')return;
-  if(remove){ delete o.images[selectedCubeFace]; }
-  else { o.imgOpts[selectedCubeFace][k]=v; }
+  saveState();
+  selectedIds.forEach(id=>{
+      let o=objects.find(o=>o.id===id);
+      if(!o||o.type!=='cube')return;
+      if(remove){ delete o.images[selectedCubeFace]; }
+      else { o.imgOpts[selectedCubeFace][k]=v; }
+  });
   render();updateProps();
+}
+function setProjMode(mode){
+  isPerspective = (mode === 'persp');
+  document.getElementById('mode-ortho').classList.toggle('active', !isPerspective);
+  document.getElementById('mode-persp').classList.toggle('active', isPerspective);
+  render();
 }
 
 // ── LAYERS ────────────────────────────────────────────────────────────
@@ -1483,7 +1925,7 @@ function updateLayers(){
   const el=document.getElementById('layer-list');
   if(!objects.length){el.innerHTML='<div style="padding:16px 12px;text-align:center;color:var(--text3);font-size:11px;">No objects yet</div>';return;}
   el.innerHTML=[...objects].reverse().map(o=>`
-    <div class="layer-item ${o.id===selectedId?'selected':''} ${!o.visible?'hidden':''}" onclick="selectObject(${o.id})">
+    <div class="layer-item ${selectedIds.includes(o.id)?'selected':''} ${!o.visible?'hidden':''}" onclick="selectObject(${o.id}, event.shiftKey||event.metaKey||event.ctrlKey)">
       <div class="layer-thumb" style="background:${o.color};"></div><span class="layer-name">${o.name}</span><span class="layer-type">${o.type==='cube'?'Box':'Wall'}</span>
       <div class="layer-vis-btn" onclick="event.stopPropagation();toggleVis(${o.id})">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><${o.visible?'':'path d="M1 1l10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>'}${o.visible?'<circle cx="6" cy="6" r="2" stroke="currentColor" stroke-width="1.1"/><path d="M1 6s1.8-3 5-3 5 3 5 3-1.8 3-5 3-5-3-5-3z" stroke="currentColor" stroke-width="1.1"/>':''}</svg>
@@ -1494,32 +1936,50 @@ function toggleVis(id){const o=objects.find(o=>o.id===id);if(!o)return;o.visible
 
 function updateStatusBar(){
   document.getElementById('sb-planes').textContent=`${objects.length} objects`;
-  if(selectedId){
-    const o=objects.find(o=>o.id===selectedId);
+  if(selectedIds.length === 1){
+    const o=objects.find(o=>o.id===selectedIds[0]);
     if(o){
       const dims=o.type==='cube'?`${formatDim(o.w)} × ${formatDim(o.d)} × ${formatDim(o.h)}`:`${formatDim(o.w)} × ${formatDim(o.h)}`;
       document.getElementById('sb-sel').textContent=`${o.name} · ${dims}`;
     }
-  }else{document.getElementById('sb-sel').textContent='—';}
+  } else if (selectedIds.length > 1) {
+    document.getElementById('sb-sel').textContent=`${selectedIds.length} objects selected`;
+  } else {
+      document.getElementById('sb-sel').textContent='—';
+  }
   document.getElementById('sb-snap').textContent=snapEnabled?'Snap on':'Snap off';
 }
 
 // ── TOOLS ─────────────────────────────────────────────────────────────
 function setTool(t){
-  tool=t;['select','plane','cube','comment'].forEach(id=>{const btn=document.getElementById('tool-'+id);if(btn)btn.classList.toggle('active',id===t);});
-  document.getElementById('viewport').style.cursor=t==='plane'||t==='cube'?'crosshair':t==='comment'?'copy':'default';
+  tool=t;
+  // Handle Toolbar Toggle Button active states
+  const selectBtn = document.getElementById('tool-select');
+  const commentBtn = document.getElementById('tool-comment');
+  
+  if(selectBtn) selectBtn.classList.toggle('active', t === 'select');
+  if(commentBtn) commentBtn.classList.toggle('active', t === 'comment');
+  
+  // Update cursor based on tool
+  const vp = document.getElementById('viewport');
+  if (t === 'plane' || t === 'cube') {
+      vp.style.cursor = 'crosshair';
+  } else if (t === 'comment') {
+      vp.style.cursor = 'copy';
+  } else {
+      vp.style.cursor = 'default';
+  }
 }
 function setUnit(u){unit=u;['cm','mm','in'].forEach(id=>{document.getElementById('unit-'+id).classList.toggle('active',id===u);});render();updateProps();}
 
 function setView(v){
-  if(v==='iso'){camZ=Math.PI/4;camX=Math.PI/6;}
-  else if(v==='tl'){camZ=-Math.PI/4;camX=Math.PI/6;}
-  else if(v==='tr'){camZ=Math.PI/4;camX=Math.PI/6;}
+  const isoCamX = Math.asin(1/Math.sqrt(3)); // True isometric angle ~35.264deg
+  if(v==='tl'){camZ=-Math.PI/4;camX=isoCamX;}
+  else if(v==='tr'){camZ=Math.PI/4;camX=isoCamX;}
   else if(v==='front'){camZ=0;camX=0;}
   else if(v==='top'){camZ=0;camX=Math.PI/2-0.01;}
-  document.querySelectorAll('#view-group-1 .tb-btn, #view-group-2 .tb-btn').forEach(b=>{
-    if(b.id!=='btn-snap'&&b.id!=='btn-grid')b.classList.remove('active');
-  });
+  
+  document.querySelectorAll('#view-group-2 .tb-btn').forEach(b=>b.classList.remove('active'));
   if(document.getElementById('vb-'+v))document.getElementById('vb-'+v).classList.add('active');
   render();
 }
@@ -1549,35 +2009,98 @@ function toggleGrid(){showGrid=!showGrid;document.getElementById('btn-grid').cla
 
 // ── CONTEXT MENU ──────────────────────────────────────────────────────
 function showCtxMenu(e){
-  e.preventDefault();closeCtxMenu();
+  e.preventDefault();
+  closeCtxMenu();
   const hitNode = e.target.closest && e.target.closest('[data-id]');
-  const id=hitNode ? hitNode.getAttribute('data-id') : null;
-  if(id){ctxTarget=parseInt(id);selectObject(ctxTarget);}else if(selectedId)ctxTarget=selectedId;else return;
+  const id = hitNode ? parseInt(hitNode.getAttribute('data-id')) : null;
+  
+  if(id !== null){ 
+      ctxTarget = id;
+      // If we right-click something not in selection, add it to selection
+      if(!selectedIds.includes(id)) selectObject(id, e.shiftKey);
+  } else if(selectedIds.length > 0) {
+      ctxTarget = selectedIds[0];
+  } else {
+      return;
+  }
+  
   const menu=document.getElementById('ctx-menu');
-  menu.style.display='block';menu.style.left=e.clientX+'px';menu.style.top=e.clientY+'px';
+  menu.style.display='block';
+  menu.style.left=e.clientX+'px';
+  menu.style.top=e.clientY+'px';
 }
 function closeCtxMenu(){document.getElementById('ctx-menu').style.display='none';}
-document.addEventListener('click',()=>{closeCtxMenu();if(activeBubble){activeBubble.remove();activeBubble=null;}});
+document.addEventListener('click',()=>{closeCtxMenu();closeExportMenu();if(activeBubble){activeBubble.remove();activeBubble=null;}});
+function closeExportMenu(){const m=document.getElementById('export-menu');if(m)m.style.display='none';}
+function toggleExportMenu(e){e.stopPropagation();const m=document.getElementById('export-menu');m.style.display=m.style.display==='block'?'none':'block';}
 
 function ctxDuplicate(){
-  const o=objects.find(o=>o.id===(ctxTarget||selectedId));if(!o)return;
+  const targets = ctxTarget && !selectedIds.includes(ctxTarget) ?[ctxTarget] : selectedIds;
+  if(!targets.length) return;
   saveState();
-  const np=JSON.parse(JSON.stringify(o));
-  np.id=++idCtr;np.name+=' copy';np.x+=20;np.y+=20;
-  objects.push(np);selectedId=np.id;render();updateProps();
+  let newIds =[];
+  targets.forEach(id => {
+      const o = objects.find(o=>o.id===id);
+      if(o) {
+          const np=JSON.parse(JSON.stringify(o));
+          np.id=++idCtr; np.name+=' copy'; np.x+=20; np.y+=20;
+          objects.push(np);
+          newIds.push(np.id);
+      }
+  });
+  selectedIds = newIds;
+  render();updateProps();updateLayers();
 }
-function ctxBringFront(){const idx=objects.findIndex(o=>o.id===(ctxTarget||selectedId));if(idx<0)return;saveState();objects.push(objects.splice(idx,1)[0]);render();}
-function ctxSendBack(){const idx=objects.findIndex(o=>o.id===(ctxTarget||selectedId));if(idx<0)return;saveState();objects.unshift(objects.splice(idx,1)[0]);render();}
-function ctxDelete(){
-  const id=ctxTarget||selectedId;if(!id)return;
-  saveState();objects=objects.filter(o=>o.id!==id);
-  if(selectedId===id)selectedId=null;
-  ctxTarget=null;render();updateProps();
+function ctxBringFront(){
+    const targets = ctxTarget && !selectedIds.includes(ctxTarget) ? [ctxTarget] : selectedIds;
+    if(!targets.length) return;
+    saveState();
+    targets.forEach(id => {
+        const idx = objects.findIndex(o=>o.id===id);
+        if(idx>=0) objects.push(objects.splice(idx,1)[0]);
+    });
+    render();updateLayers();
+}
+function ctxSendBack(){
+    const targets = ctxTarget && !selectedIds.includes(ctxTarget) ? [ctxTarget] : selectedIds;
+    if(!targets.length) return;
+    saveState();
+    targets.forEach(id => {
+        const idx = objects.findIndex(o=>o.id===id);
+        if(idx>=0) objects.unshift(objects.splice(idx,1)[0]);
+    });
+    render();updateLayers();
+}
+function ctxDelete() {
+  let targets = [];
+  if (selectedIds.length > 0) {
+    targets = selectedIds.map(Number);
+  } else if (ctxTarget !== null) {
+    targets = [Number(ctxTarget)];
+  }
+
+  // Case 1: Deleting Objects
+  if (targets.length > 0) {
+    saveState();
+    objects = objects.filter(o => !targets.includes(Number(o.id)));
+    selectedIds = [];
+    ctxTarget = null;
+    activeCommentId = null;
+  } 
+  // Case 2: Deleting a Comment
+  else if (activeCommentId !== null) {
+    saveState();
+    comments = comments.filter(c => Number(c.id) !== Number(activeCommentId));
+    activeCommentId = null;
+  }
+
+  render();
+  updateProps();
+  updateLayers();
+  renderComments();
 }
 
 // ── SAVE / EXPORT ─────────────────────────────────────────────────────
-
-// Old SVG Render functions purely retained for feature-perfect Export outputs
 function generateOffscreenSVG() {
   const vp=document.getElementById('viewport');
   const W=vp.clientWidth,H=vp.clientHeight;
@@ -1592,15 +2115,15 @@ function generateOffscreenSVG() {
   const defs=mkEl('defs');g.appendChild(defs);
 
   if(showGrid){
-    const size=600,step=20;
-    const gc=mkEl('g');gc.setAttribute('opacity','0.35');
-    for(let i=-size;i<=size;i+=step){['x','y'].forEach(axis=>{
-      const p1=proj(axis==='x'?i:-size,axis==='x'?-size:i,0);
-      const p2=proj(axis==='x'?i:size,axis==='x'?size:i,0);
+    const size=2400, step=20;
+    const gc=mkEl('g'); gc.setAttribute('opacity','0.35');
+    for(let i=-size; i<=size; i+=step){ ['x','y'].forEach(axis=>{
+      const p1=proj(axis==='x'?i:-size, axis==='x'?-size:i, 0);
+      const p2=proj(axis==='x'?i:size, axis==='x'?size:i, 0);
       const ln=mkEl('line');
-      ln.setAttribute('x1',p1.sx);ln.setAttribute('y1',p1.sy);
-      ln.setAttribute('x2',p2.sx);ln.setAttribute('y2',p2.sy);
-      ln.setAttribute('stroke','#b0b0c0');ln.setAttribute('stroke-width',i===0?0.8/zoomS:0.4/zoomS);
+      ln.setAttribute('x1',p1.sx); ln.setAttribute('y1',p1.sy);
+      ln.setAttribute('x2',p2.sx); ln.setAttribute('y2',p2.sy);
+      ln.setAttribute('stroke','#b0b0c0'); ln.setAttribute('stroke-width',i===0?0.8/zoomS:0.4/zoomS);
       gc.appendChild(ln);
     });}
     g.appendChild(gc);
@@ -1630,8 +2153,10 @@ function generateOffscreenSVG() {
         img.setAttribute('height',o.h);
         img.setAttribute('preserveAspectRatio',o.imgOpts?.fit==='fit'?'xMidYMid meet':'none');
         pat.appendChild(img);
-        let rx=o.imgOpts?.flipH?-1:1;
-        let ry=o.imgOpts?.flipV?-1:1;
+        let defaultRx = -1; 
+        let defaultRy = o.axis === 'floor' ? -1 : 1;
+        let rx=o.imgOpts?.flipH?-defaultRx:defaultRx;
+        let ry=o.imgOpts?.flipV?-defaultRy:defaultRy;
         let rot=o.imgOpts?.rot||0;
         let icx=o.w/2,icy=o.h/2;
         let imgTrans=`translate(${icx},${icy}) rotate(${rot}) scale(${rx},${ry}) translate(${-icx},${-icy})`;
@@ -1664,13 +2189,20 @@ function generateOffscreenSVG() {
         const poly=mkEl('polygon');
         poly.setAttribute('points',ptsStr(f.pts));
         const lm=lightMap[f.name];
-        poly.setAttribute('fill',o.color);
+        
+        if (o.images && o.images[f.name]) {
+             poly.setAttribute('fill', o.color); 
+        } else {
+            poly.setAttribute('fill',o.color);
+        }
         poly.setAttribute('fill-opacity',o.opacity);
         poly.setAttribute('stroke','rgba(0,0,0,0.1)');
         poly.setAttribute('stroke-width',0.6/zoomS);
         gObj.appendChild(poly);
-        const shade=mkEl('polygon');shade.setAttribute('points',ptsStr(f.pts));
-        shade.setAttribute('fill',`rgba(0,0,0,${(1-lm)*0.55})`);gObj.appendChild(shade);
+        if (!(o.images && o.images[f.name])) {
+            const shade=mkEl('polygon');shade.setAttribute('points',ptsStr(f.pts));
+            shade.setAttribute('fill',`rgba(0,0,0,${(1-lm)*0.55})`);gObj.appendChild(shade);
+        }
       });
     }
     g.appendChild(gObj);
@@ -1685,37 +2217,63 @@ function saveFile(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([injected],{type:'text/html'}));a.download='boothcraft-design.html';a.click();
 }
 
-function exportSVG(){
-  const s=new XMLSerializer();const src='<?xml version="1.0"?>\n'+s.serializeToString(generateOffscreenSVG());
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([src],{type:'image/svg+xml'}));a.download='booth-export.svg';a.click();
-}
-
-function exportCapture(){
+function exportFormat(type){
+  closeExportMenu();
+  
+  if(type === 'svg') {
+    const s=new XMLSerializer();const src='<?xml version="1.0"?>\n'+s.serializeToString(generateOffscreenSVG());
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([src],{type:'image/svg+xml'}));a.download='booth-export.svg';a.click();
+    return;
+  }
+  
   const canvas=document.createElement('canvas'),vp=document.getElementById('viewport');
   canvas.width=vp.clientWidth;canvas.height=vp.clientHeight;
   const ctx=canvas.getContext('2d');ctx.fillStyle='#e8e8e8';ctx.fillRect(0,0,canvas.width,canvas.height);
   const img=new Image(),svgStr=new XMLSerializer().serializeToString(generateOffscreenSVG());
   const blob=new Blob([svgStr],{type:'image/svg+xml'}),url=URL.createObjectURL(blob);
-  img.onload=()=>{ctx.drawImage(img,0,0);const a=document.createElement('a');a.href=canvas.toDataURL('image/png');a.download='booth-capture.png';a.click();URL.revokeObjectURL(url);};
+  
+  img.onload=()=>{
+    ctx.drawImage(img,0,0);
+    const a=document.createElement('a');
+    let mime = 'image/png';
+    if(type === 'jpg') mime = 'image/jpeg';
+    if(type === 'webp') mime = 'image/webp';
+    if(type === 'gif') mime = 'image/gif';
+    
+    a.href=canvas.toDataURL(mime, 0.9);
+    a.download=`booth-capture.${type}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   img.src=url;
 }
 
 function newScene(){
   if(objects.length&&!confirm('Start a new scene? Unsaved changes will be lost.'))return;
-  saveState();objects=[];comments=[];selectedId=null;panX=0;panY=0;zoomS=1;camZ=Math.PI/4;camX=Math.PI/6;
+  saveState(); objects=[]; comments=[]; selectedIds=[]; panX=0; panY=0; zoomS=0.6;
   document.getElementById('zoom-label').textContent='100%';
-  document.querySelectorAll('#view-group-1 .tb-btn, #view-group-2 .tb-btn').forEach(b=>{
-    if(b.id!=='btn-snap'&&b.id!=='btn-grid')b.classList.remove('active');
-  });
-  document.getElementById('vb-iso').classList.add('active');
+  document.querySelectorAll('#view-group-2 .tb-btn').forEach(b=>b.classList.remove('active'));
   render();updateProps();renderComments();
 }
 
 // ── KEYBOARD ──────────────────────────────────────────────────────────
-document.addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
-  if(e.key==='Escape'){selectedId=null;setTool('select');render();updateProps();}
-  if((e.key==='Delete'||e.key==='Backspace')&&!e.metaKey){ctxDelete();}
+document.addEventListener('keydown', e => {
+  // Don't trigger if user is typing in a text field
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  // DELETE / BACKSPACE
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    e.preventDefault();
+    ctxDelete();
+  }
+
+  // SELECT ALL (Cmd/Ctrl + A)
+  if ((e.key === 'a' || e.key === 'A') && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
+    selectedIds = objects.map(o => o.id);
+    activeCommentId = null;
+    render(); updateProps(); updateLayers();
+  }
   if(e.key==='v'||e.key==='V')setTool('select');
   if(e.key==='p'||e.key==='P')setTool('plane');
   if(e.key==='c'&&!e.metaKey&&!e.ctrlKey)setTool('cube');
@@ -1723,25 +2281,45 @@ document.addEventListener('keydown',e=>{
   if((e.key==='z')&&(e.metaKey||e.ctrlKey)&&!e.shiftKey){e.preventDefault();undo();}
   if((e.key==='z')&&(e.metaKey||e.ctrlKey)&&e.shiftKey){e.preventDefault();redo();}
   if((e.key==='d')&&(e.metaKey||e.ctrlKey)){e.preventDefault();ctxDuplicate();}
+  
   if((e.key==='c'||e.key==='C')&&(e.metaKey||e.ctrlKey)){
-    const o=objects.find(o=>o.id===selectedId);if(o)clipboard=JSON.parse(JSON.stringify(o));
+    clipboard = selectedIds.map(id => JSON.parse(JSON.stringify(objects.find(o=>o.id===id))));
   }
   if((e.key==='v'||e.key==='V')&&(e.metaKey||e.ctrlKey)){
-    if(clipboard){
-      saveState();let np={...clipboard,id:++idCtr,name:clipboard.name+' copy'};np.x+=20;np.y+=20;
-      objects.push(np);selectedId=np.id;render();updateProps();updateLayers();
+    if(clipboard && clipboard.length){
+      saveState();
+      selectedIds =[];
+      clipboard.forEach(cbObj => {
+          let np = {...cbObj, id: ++idCtr, name: cbObj.name+' copy'};
+          np.x += 20; np.y += 20;
+          objects.push(np);
+          selectedIds.push(np.id);
+      });
+      render(); updateProps(); updateLayers();
     }
   }
+  
   if(e.key==='+')doZoom(0.1);
   if(e.key==='-')doZoom(-0.1);
   if(e.key==='0'&&(e.metaKey||e.ctrlKey)){e.preventDefault();fitView();}
+  
   const step=e.shiftKey?50:10;
-  if(selectedId){
-    const o=objects.find(o=>o.id===selectedId);if(!o)return;
-    if(e.key==='ArrowLeft'){e.preventDefault();saveState();o.x-=step;render();updateProps();}
-    if(e.key==='ArrowRight'){e.preventDefault();saveState();o.x+=step;render();updateProps();}
-    if(e.key==='ArrowUp'){e.preventDefault();saveState();o.y+=step;render();updateProps();}
-    if(e.key==='ArrowDown'){e.preventDefault();saveState();o.y-=step;render();updateProps();}
+  if(selectedIds.length){
+    let dx=0, dy=0;
+    if(e.key==='ArrowLeft') dx=-step;
+    if(e.key==='ArrowRight') dx=step;
+    if(e.key==='ArrowUp') dy=step;
+    if(e.key==='ArrowDown') dy=-step;
+    
+    if(dx!==0 || dy!==0) {
+        e.preventDefault();
+        saveState();
+        selectedIds.forEach(id=>{
+            let o=objects.find(o=>o.id===id);
+            if(o){ o.x=r2(o.x+dx); o.y=r2(o.y+dy); }
+        });
+        render(); updateProps();
+    }
   }
 });
 
@@ -1757,14 +2335,29 @@ if(window.__BC_STATE__){
 // ── INIT DEMO ─────────────────────────────────────────────────────────
 function initDemo(){
   objects=[
-    mkPlane({name:'Back Wall',x:0,y:0,z:0,w:300,h:250,axis:'z',color:'#efefef'}),
-    mkPlane({name:'Left Wall',x:0,y:0,z:0,w:150,h:250,axis:'z',rotZ:90,color:'#e8e8e8'}),
-    mkPlane({name:'Right Wall',x:300,y:0,z:0,w:150,h:250,axis:'z',rotZ:90,color:'#e8e8e8'}),
-    mkPlane({name:'Floor',x:0,y:0,z:0,w:300,h:150,axis:'floor',color:'#dcdcdc'}),
-    mkCube({name:'Counter',x:80,y:20,z:0,w:80,d:50,h:95,color:'#e0e0e0'}),
-    mkCube({name:'Display Stand',x:190,y:25,z:0,w:40,d:40,h:120,color:'#e4e4e4'}),
+    // 1. Floor (793.6cm wide x 500cm deep)
+    mkPlane({name:'Floor', x:0, y:0, z:0, w:793.6, h:500, axis:'floor', color:'#dcdcdc'}),
+    
+    // 2. Side Walls (edges of the booth)
+    mkPlane({name:'Left Wall', x:0, y:0, z:0, w:500, h:297.6, rotZ:90, color:'#efefef'}),
+    mkPlane({name:'Right Wall', x:793.6, y:0, z:0, w:500, h:297.6, rotZ:90, color:'#efefef'}),
+    
+    // 3. Back Wall panels (G1 and G3) - placed at the back (y=0)
+    mkPlane({name:'G1 (Back-Left)', x:0, y:0, z:0, w:297.6, h:297.6, rotZ:0, color:'#e8e8e8'}),
+    mkPlane({name:'G3 (Back-Right)', x:496, y:0, z:0, w:297.6, h:297.6, rotZ:0, color:'#e8e8e8'}),
+    
+    // 4. Center Store Room - starts at y=0, extends forward to y=100
+    mkPlane({name:'Store Left Wall', x:297.6, y:0, z:0, w:100, h:396.8, rotZ:90, color:'#e8e8e8'}),
+    mkPlane({name:'Door', x:496.1, y:5, z:0, w:90, h:210, rotZ:90, color:'#444444'}),
+    mkPlane({name:'Store Right Wall', x:496, y:0, z:0, w:100, h:396.8, rotZ:90, color:'#e8e8e8'}),
+    mkPlane({name:'G2 (Store Front)', x:297.6, y:100, z:0, w:198.4, h:396.8, rotZ:0, color:'#e0e0e0'}),
+    
+    // 5. Reception Desk & Header (Front Left)
+    mkCube({name:'Counter', x:10, y:410, z:0, w:80, d:80, h:100, color:'#e4e4e4'}),
+    mkPlane({name:'Header', x:360, y:500, z:356.8, w:80, h:40, rotZ:0, color:'#0d99ff'})
   ];
 }
+
 
 if(!objects.length)initDemo();
 fitView();
