@@ -118,6 +118,64 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .layer-item:hover .layer-vis-btn:hover{opacity:1;background:var(--border);}
 .layer-item.hidden .layer-name{opacity:.4;}
 
+/* ── TEMPLATE MODAL ── */
+#tpl-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:none;align-items:center;justify-content:center;}
+#tpl-overlay.open{display:flex;}
+#tpl-modal{background:var(--surface);border-radius:10px;box-shadow:var(--shadow-lg);width:min(960px,94vw);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+#tpl-modal-head{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);gap:10px;flex-shrink:0;}
+#tpl-modal-head h2{font-size:14px;font-weight:600;flex:1;}
+.tpl-close{width:26px;height:26px;border:none;background:transparent;cursor:pointer;color:var(--text3);font-size:18px;display:flex;align-items:center;justify-content:center;border-radius:4px;}
+.tpl-close:hover{background:var(--surface3);color:var(--text);}
+.tpl-section-row{display:flex;gap:12px;}
+.tpl-group-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin:0 0 8px;}
+.tpl-group{margin-bottom:22px;}
+.tpl-row{display:flex;gap:10px;flex-wrap:wrap;}
+#tpl-body{overflow-y:auto;padding:14px 14px;display:flex;flex-direction:column;gap:10px;}
+.tpl-box{border:1px solid var(--border);border-radius:var(--radius);padding:10px 10px;background:#fff;flex:auto;width: max-content;}
+.tpl-box-label{font-size:10px;font-weight:600;color:var(--text2);letter-spacing:.3px;margin-bottom:10px;line-height:1.4;}
+.tpl-cards-row{display:flex;gap:8px;flex-wrap:wrap;}
+.tpl-card{cursor:pointer;transition:all .15s;overflow:hidden;background:var(--surface);flex-shrink:0;}
+.tpl-card:hover{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
+.tpl-card svg{display:block;}
+
+/* ── DETAIL MODAL ── */
+#det-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2100;display:none;align-items:center;justify-content:center;}
+#det-overlay.open{display:flex;}
+#det-modal{background:var(--surface);border-radius:10px;box-shadow:var(--shadow-lg);width:min(860px,96vw);max-height:92vh;display:flex;flex-direction:column;overflow:hidden;}
+#det-modal-head{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);gap:10px;flex-shrink:0;}
+#det-modal-head h2{font-size:14px;font-weight:600;flex:1;}
+#det-body{display:flex;gap:0;flex:1;overflow:hidden;min-height:0;}
+#det-left{width:260px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+#det-preview{padding:14px;border-bottom:1px solid var(--border);}
+#det-preview svg{width:100%;height:auto;display:block;}
+#det-files-section{flex:1;overflow-y:auto;padding:10px 12px;}
+#det-files-section .sec-lbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px;}
+#det-qt-drop{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:10px 8px;text-align:center;color:var(--text3);font-size:10px;cursor:pointer;transition:all .15s;margin-bottom:8px;}
+#det-qt-drop.over{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);}
+.det-file-item{display:flex;align-items:center;gap:6px;padding:4px 6px;background:var(--surface3);border-radius:var(--radius-sm);margin-bottom:3px;cursor:grab;font-size:10px;color:var(--text2);border:1px solid var(--border);}
+.det-file-item .fi-num{width:16px;height:16px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0;}
+.det-file-item .fi-num.unassigned{background:var(--border2);color:var(--text3);}
+.det-file-item .fi-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.det-file-item .fi-rm{color:var(--text3);cursor:pointer;font-size:11px;padding:0 2px;flex-shrink:0;}
+.det-file-item .fi-rm:hover{color:var(--red);}
+#det-right{flex:1;overflow-y:auto;padding:14px;}
+#det-layers-list{display:flex;flex-direction:column;gap:8px;}
+.det-layer-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.det-layer-card-head{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.det-layer-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.det-layer-name-input{flex:1;height:22px;padding:0 6px;background:var(--surface);border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:11px;color:var(--text);outline:none;}
+.det-layer-name-input:focus{border-color:var(--accent);}
+.det-layer-body{display:flex;gap:6px;padding:8px 10px;align-items:center;}
+.det-dim-input{width:64px;height:24px;padding:0 6px;background:var(--surface3);border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:11px;color:var(--text);outline:none;text-align:center;}
+.det-dim-input:focus{border-color:var(--accent);background:var(--surface);}
+.det-dim-sep{font-size:11px;color:var(--text3);}
+.det-unit-sel{height:24px;padding:0 4px;background:var(--surface3);border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:10px;color:var(--text2);outline:none;cursor:pointer;}
+.det-file-drop{flex:1;min-width:0;height:24px;border:1.5px dashed var(--border2);border-radius:3px;display:flex;align-items:center;padding:0 7px;font-size:10px;color:var(--text3);cursor:pointer;transition:all .12s;position:relative;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.det-file-drop.has-file{border-color:var(--green);color:var(--text);background:rgba(27,196,125,.06);}
+.det-file-drop.drag-over{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);}
+.det-file-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+#det-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-shrink:0;}
+
 /* ── VIEWPORT ── */
 #viewport{flex:1;position:relative;overflow:hidden;background:var(--canvas-bg);}
 #vp-obj-name{position:absolute;top:12px;left:12px;z-index:10;font-size:14px;font-weight:600;color:var(--text2);pointer-events:none;}
@@ -190,6 +248,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .img-preview img{width:100%;display:block;border-radius:var(--radius-sm);}
 .img-preview .rm{position:absolute;top:4px;right:4px;width:18px;height:18px;background:rgba(0,0,0,.5);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:background .1s;}
 .img-preview .rm:hover{background:rgba(239,68,68,.8);}
+
+#quick-texture-zone{padding:8px 10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+#quick-texture-zone .qt-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px;}
+#qt-drop{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:10px 8px;text-align:center;color:var(--text3);font-size:10px;line-height:1.5;transition:all .15s;position:relative;}
+#qt-drop.over{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);}
+#qt-drop.success{border-color:var(--green);background:rgba(27,196,125,.08);color:var(--green);}
+#qt-drop.error{border-color:var(--orange);background:rgba(245,158,11,.08);color:var(--orange);}
+#qt-results{margin-top:5px;font-size:9.5px;line-height:1.5;color:var(--text3);}
+
 .tb-btn:disabled{opacity:.3;cursor:default;}
 .tb-btn:disabled:hover{background:transparent;}
 .tooltip{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:10px;padding:3px 7px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:200;}
@@ -241,6 +308,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   <div class="logo"><div class="logo-dot"></div>BoothCraft</div>
   <div class="tb-sep"></div>
   <button class="tb-btn" onclick="newScene()">New</button>
+  <button class="tb-btn" onclick="openTplModal()">Template</button>
   <button class="tb-btn" onclick="saveFile()">Save</button>
   <div class="tb-sep"></div>
   <!-- Add these two buttons back so the code doesn't crash -->
@@ -312,6 +380,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
         <button class="tb-btn" style="height:22px; padding:0 5px; font-size:10px;" onclick="setTool('cube')">+ Cube</button>
       </div>
     </div>
+	
+    <div id="quick-texture-zone">
+      <div class="qt-label">Quick Texture</div>
+      <div id="qt-drop"
+        ondragover="qtDragOver(event)"
+        ondragleave="qtDragLeave(event)"
+        ondrop="qtDrop(event)">
+        ↓ Drop images / PDFs<br>matched by filename
+      </div>
+      <div id="qt-results"></div>
+    </div>
     <div class="panel-scroll" id="layer-list"></div>
   </div>
 
@@ -373,6 +452,88 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   <div class="ctx-sep"></div>
   <div class="ctx-item danger" onclick="ctxDelete()"><span>Delete</span><span class="ctx-kb">Del</span></div>
 </div>
+
+<!-- ── TEMPLATE PICKER MODAL ── -->
+<div id="tpl-overlay">
+  <div id="tpl-modal">
+  <div id="tpl-modal-head">
+    <h2>Choose a Booth Template</h2>
+    <button class="tpl-close" onclick="closeTplModal()">×</button>
+  </div>
+  <div id="tpl-body">
+
+    <!-- Row 1: 1 wall | 2 walls | 3 walls -->
+    <div class="tpl-section-row">
+      <div class="tpl-box" style="flex:1;">
+        <div class="tpl-box-label">1 wall</div>
+        <div class="tpl-cards-row" id="tpl-row-1wall"></div>
+      </div>
+      <div class="tpl-box" style="flex:2;">
+        <div class="tpl-box-label">2 walls</div>
+        <div class="tpl-cards-row" id="tpl-row-2wall"></div>
+      </div>
+      <div class="tpl-box" style="flex:1;">
+        <div class="tpl-box-label">3 walls</div>
+        <div class="tpl-cards-row" id="tpl-row-3wall"></div>
+      </div>
+    </div>
+
+    <!-- Row 2: 1 wall incl. storage | 2 walls incl. storage -->
+    <div class="tpl-section-row">
+      <div class="tpl-box" style="flex:1;">
+        <div class="tpl-box-label">1 wall<br>incl. storage</div>
+        <div class="tpl-cards-row" id="tpl-row-1wall-s"></div>
+      </div>
+      <div class="tpl-box" style="flex:1;">
+        <div class="tpl-box-label">2 walls<br>incl. storage</div>
+        <div class="tpl-cards-row" id="tpl-row-2wall-s"></div>
+      </div>
+    </div>
+
+    <!-- Row 3: Other incl. centered storage — full width -->
+    <div class="tpl-section-row">
+      <div class="tpl-box" style="flex:1;">
+        <div class="tpl-box-label">Other<br>incl. centered storage</div>
+        <div class="tpl-cards-row" id="tpl-row-other"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ── DETAIL / LAYER SETUP MODAL ── -->
+<div id="det-overlay">
+  <div id="det-modal">
+    <div id="det-modal-head">
+      <h2 id="det-title">Configure Booth Layers</h2>
+      <button class="tpl-close" onclick="closeDetModal()">×</button>
+    </div>
+    <div id="det-body">
+      <div id="det-left">
+        <div id="det-preview"></div>
+        <div id="det-files-section">
+          <div class="sec-lbl">List of files</div>
+          <div id="det-qt-drop"
+            ondragover="detQtDragOver(event)"
+            ondragleave="detQtDragLeave(event)"
+            ondrop="detQtDrop(event)">
+            ↓ Drop images / PDFs here
+          </div>
+          <div id="det-file-list"></div>
+        </div>
+      </div>
+      <div id="det-right">
+        <div id="det-layers-list"></div>
+      </div>
+    </div>
+    <div id="det-footer">
+      <button class="btn-secondary" onclick="closeDetModal()">Cancel</button>
+      <button class="btn-primary" onclick="applyDetTemplate()">Apply Template</button>
+    </div>
+  </div>
+</div>
+
 
 <script>
 const SVG_NS='http://www.w3.org/2000/svg';
@@ -1647,9 +1808,10 @@ async function processAndSetImage(file, o, callback, face = null){
   function canvasToWebp(canvas){return canvas.toDataURL('image/webp',0.85);}
   
   const applyToObj = (webp) => {
-      // If multiple selected, apply texture to all!
-      selectedIds.forEach(id => {
-          let ob = objects.find(x=>x.id===id);
+      // If called with a specific target object (e.g. Quick Texture), apply only to it.
+      // Otherwise fall back to all selected objects (normal drag-drop / panel behaviour).
+      const targets = o ? [o] : selectedIds.map(id => objects.find(x => x.id === id)).filter(Boolean);
+      targets.forEach(ob => {
           if(!ob) return;
           if (ob.type === 'cube' && face) {
               if(!ob.images) ob.images = {};
@@ -1736,6 +1898,75 @@ function loadCubeImageFile(input){
   const file=input.files[0];if(!file)return;
   const o=objects.find(o=>o.id===selectedIds[0]);if(!o||o.type!=='cube')return;
   processAndSetImage(file,o,()=>{saveState();render();updateProps();}, selectedCubeFace);
+}
+
+// ── QUICK TEXTURE ──────────────────────────────────────────────────────
+function qtNormalizeName(filename){
+  // Remove extension
+  let name = filename.replace(/\.[^/.]+$/, '');
+  // Strip known suffixes after underscore: _PROOF1, _PROOF2, _digital, _print, _v1, _final, etc.
+  // Pattern: cut everything from the last underscore onwards if it matches a non-name suffix
+  name = name.replace(/_(?:PROOF\d*|DIGITAL|PRINT|FINAL|APPROVED|V\d+|REV\d*|draft|proof\d*|digital|print|final|approved|v\d+|rev\d*)$/i, '');
+  return name.trim().toLowerCase();
+}
+
+function qtDragOver(e){
+  e.preventDefault();
+  document.getElementById('qt-drop').classList.add('over');
+}
+function qtDragLeave(e){
+  document.getElementById('qt-drop').classList.remove('over');
+}
+
+function qtDrop(e){
+  e.preventDefault();
+  const drop = document.getElementById('qt-drop');
+  drop.classList.remove('over');
+  const files = Array.from(e.dataTransfer.files);
+  if(!files.length) return;
+
+  const results = [];
+  let pending = files.length;
+
+  function finish(){
+    const resEl = document.getElementById('qt-results');
+    if(results.length){
+      drop.classList.add('success');
+      setTimeout(()=>drop.classList.remove('success'), 1800);
+      resEl.innerHTML = results.map(r =>
+        `<span style="color:${r.ok?'var(--green)':'var(--orange)'};">${r.ok?'✓':'✗'}</span> ${r.msg}`
+      ).join('<br>');
+    } else {
+      drop.classList.add('error');
+      setTimeout(()=>drop.classList.remove('error'), 1800);
+      resEl.innerHTML = '<span style="color:var(--orange);">No matching layers found.</span>';
+    }
+    saveState();
+    render();
+    updateProps();
+    updateLayers();
+  }
+
+  files.forEach(file => {
+    const normalizedFile = qtNormalizeName(file.name);
+
+    // Find best matching object: exact match first, then startsWith
+    let matched = objects.find(o => qtNormalizeName(o.name) === normalizedFile);
+    if(!matched) matched = objects.find(o => normalizedFile.startsWith(qtNormalizeName(o.name)) || qtNormalizeName(o.name).startsWith(normalizedFile));
+
+    if(!matched){
+      results.push({ ok: false, msg: `"${file.name}" — no match` });
+      if(--pending === 0) finish();
+      return;
+    }
+
+    const targetFace = matched.type === 'cube' ? 'front' : null;
+
+    processAndSetImage(file, matched, () => {
+      results.push({ ok: true, msg: `"${file.name}" → ${matched.name}${targetFace ? ` (${targetFace})` : ''}` });
+      if(--pending === 0) finish();
+    }, targetFace);
+  });
 }
 
 // ── COMMENTS ──────────────────────────────────────────────────────────
@@ -2548,6 +2779,548 @@ function initDemo(){
   ];
 }
 
+// ═══════════════════════════════════════════════════════════════
+// TEMPLATE SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+// ── Palette for numbered layers ─────────────────────────────────
+const TPL_COLORS = ['#1bc47d','#38AFD9','#e05a3a','#8b8fa8','#1a2e44','#0d99ff','#f59e0b'];
+
+// SVG floor-plan thumbnail. Coordinate space: 156×100. Top=back wall, bottom=front.
+// BG = booth floor (tan). Segs are colored wall strips with number badges.
+function makeTplSvg(segs, svgW=156, svgH=100){
+  const BG='#c9b49a';
+  let out=`<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">`;
+  out+=`<rect x="0" y="0" width="${svgW}" height="${svgH}" fill="${BG}" rx="2"/>`;
+  segs.forEach(s=>{
+    out+=`<rect x="${s.x}" y="${s.y}" width="${s.w}" height="${s.h}" fill="${s.c}" rx="1"/>`;
+  });
+  // Number badges
+  segs.forEach((s,i)=>{
+    const cx=s.x+s.w/2, cy=s.y+s.h/2;
+    out+=`<circle cx="${cx}" cy="${cy}" r="6" fill="${s.c}" stroke="white" stroke-width="1.5"/>`;
+    out+=`<text x="${cx}" y="${cy+3.5}" text-anchor="middle" font-size="6.5" font-weight="700" fill="white" font-family="Inter,sans-serif">${i+1}</text>`;
+  });
+  out+=`</svg>`;
+  return out;
+}
+
+// ── SVG thumbnail constants ──────────────────────────────────────
+const T  = 5;    // wall thickness in SVG units
+const W  = 156;  // SVG canvas width
+const H  = 100;  // SVG canvas height
+const SD = 25;   // storage depth in SVG units  (maps to 50cm)
+const SW = 25;   // storage width  in SVG units  (maps to 50cm)
+
+// ── Real-world dimension constants (cm) ─────────────────────────
+// Booth floor:  200 cm wide  ×  250 cm deep
+// Wall height:  250 cm
+// Storage box:   50 cm wide  ×   50 cm deep
+const R_W   = 200;   // booth width
+const R_D   = 250;   // booth depth (side-wall length)
+const R_H   = 250;   // wall height
+const R_SW  =  50;   // storage width
+const R_SD  =  50;   // storage depth
+const R_BPL = R_W - R_SW;        // back partial left  = 150
+const R_BPR = R_W - R_SW;        // back partial right = 150
+const R_SPL = R_D - R_SD;        // side partial left  = 200
+const R_SPR = R_D - R_SD;        // side partial right = 200
+
+const TEMPLATES = [
+  // ════════════ 1 WALL ════════════
+  { group:'1wall', label:'Back wall only',
+    svgSegs:[
+      {x:0, y:0, w:W, h:T, c:TPL_COLORS[0]},                    // 1 (Green)
+    ],
+    layers:[
+      {name:'Back Wall', color:TPL_COLORS[0], userW:R_W, userH:R_H, userUnit:'cm', ax:'z', rx:0, px:0, py:0, pz:0},
+    ]},
+
+  // ════════════ 2 WALLS ════════════
+  { group:'2wall', label:'Left + Back',
+    svgSegs:[
+      {x:0,   y:0, w:T, h:H, c:TPL_COLORS[0]},                  // 1 (Green)
+      {x:0,   y:0, w:W, h:T, c:TPL_COLORS[1]},                  // 2 (Cyan)
+    ],
+    layers:[
+      {name:'Left Wall', color:TPL_COLORS[0], userW:R_D, userH:R_H, userUnit:'cm', ax:'z', rx:90, px:0,   py:0, pz:0},
+      {name:'Back Wall', color:TPL_COLORS[1], userW:R_W, userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,   py:0, pz:0},
+    ]},
+  { group:'2wall', label:'Back + Right',
+    svgSegs:[
+      {x:0,   y:0, w:W,   h:T, c:TPL_COLORS[0]},                // 1 (Green)
+      {x:W-T, y:0, w:T,   h:H, c:TPL_COLORS[1]},                // 2 (Cyan)
+    ],
+    layers:[
+      {name:'Back Wall',  color:TPL_COLORS[0], userW:R_W, userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,   py:0, pz:0},
+      {name:'Right Wall', color:TPL_COLORS[1], userW:R_D, userH:R_H, userUnit:'cm', ax:'z', rx:90, px:R_W, py:0, pz:0},
+    ]},
+
+  // ════════════ 3 WALLS ════════════
+  { group:'3wall', label:'Left + Back + Right',
+    svgSegs:[
+      {x:0,   y:0, w:T, h:H, c:TPL_COLORS[0]},                  // 1 (Green)
+      {x:0,   y:0, w:W, h:T, c:TPL_COLORS[1]},                  // 2 (Cyan)
+      {x:W-T, y:0, w:T, h:H, c:TPL_COLORS[2]},                  // 3 (Red)
+    ],
+    layers:[
+      {name:'Left Wall',  color:TPL_COLORS[0], userW:R_D, userH:R_H, userUnit:'cm', ax:'z', rx:90, px:0,   py:0, pz:0},
+      {name:'Back Wall',  color:TPL_COLORS[1], userW:R_W, userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,   py:0, pz:0},
+      {name:'Right Wall', color:TPL_COLORS[2], userW:R_D, userH:R_H, userUnit:'cm', ax:'z', rx:90, px:R_W, py:0, pz:0},
+    ]},
+
+  // ════════════ 1 WALL + STORAGE ════════════
+  { group:'1wall-s', label:'Storage left',
+    svgSegs:[
+      {x:0,    y:35, w:T,      h:H-35,  c:TPL_COLORS[0]},       // 1 (Green)
+      {x:0,    y:35, w:45,     h:T,     c:TPL_COLORS[1]},       // 2 (Cyan)
+      {x:45,   y:0,  w:T,      h:35+T,  c:TPL_COLORS[2]},       // 3 (Red)
+      {x:45,   y:0,  w:W-45,   h:T,     c:TPL_COLORS[3]},       // 4 (Gray)
+    ],
+    layers:[
+      {name:'Left Side Wall',  color:TPL_COLORS[0], userW:215,   userH:R_H, userUnit:'cm', ax:'z', rx:90, px:0,     py:80,   pz:0},
+      {name:'Store Front',     color:TPL_COLORS[1], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,     py:80,   pz:0},
+      {name:'Store Side Wall', color:TPL_COLORS[2], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:80,    py:0,    pz:0},
+      {name:'Back Wall',       color:TPL_COLORS[3], userW:120,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:80,    py:0,    pz:0},
+    ]},
+
+  { group:'1wall-s', label:'Storage right',
+    svgSegs:[
+      {x:0,    y:0,  w:W-45,   h:T,     c:TPL_COLORS[0]},       // 1 (Green)
+      {x:W-45-T, y:0, w:T,     h:35+T,  c:TPL_COLORS[1]},       // 2 (Cyan)
+      {x:W-45-T, y:35, w:45,   h:T,     c:TPL_COLORS[2]},       // 3 (Red)
+      {x:W-T,  y:35, w:T,      h:H-35,  c:TPL_COLORS[3]},       // 4 (Gray)
+    ],
+    layers:[
+      {name:'Back Wall',       color:TPL_COLORS[0], userW:120,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,     py:0,    pz:0},
+      {name:'Store Side Wall', color:TPL_COLORS[1], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:120,   py:0,    pz:0},
+      {name:'Store Front',     color:TPL_COLORS[2], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:120,   py:80,   pz:0},
+      {name:'Right Side Wall', color:TPL_COLORS[3], userW:215,   userH:R_H, userUnit:'cm', ax:'z', rx:90, px:R_W,   py:80,   pz:0},
+    ]},
+
+  // ════════════ 2 WALLS + STORAGE ════════════
+  { group:'2wall-s', label:'Left wall + storage',
+    svgSegs:[
+      {x:0,    y:35, w:T,      h:H-35,  c:TPL_COLORS[0]},       // 1 (Green)
+      {x:0,    y:35, w:45,     h:T,     c:TPL_COLORS[1]},       // 2 (Cyan)
+      {x:45,   y:0,  w:T,      h:35+T,  c:TPL_COLORS[2]},       // 3 (Red)
+      {x:0,    y:0,  w:W,      h:T,     c:TPL_COLORS[3]},       // 4 (Gray)
+    ],
+    layers:[
+      {name:'Left Wall',       color:TPL_COLORS[0], userW:R_D,   userH:R_H, userUnit:'cm', ax:'z', rx:90, px:0,    py:0,    pz:0},
+      {name:'Store Front',     color:TPL_COLORS[1], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,    py:80,   pz:0},
+      {name:'Store Inner Wall',color:TPL_COLORS[2], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:80,   py:0,    pz:0},
+      {name:'Back Wall',       color:TPL_COLORS[3], userW:R_W,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,    py:0,    pz:0},
+    ]},
+
+  { group:'2wall-s', label:'Back + storage + right wall',
+    svgSegs:[
+      {x:0,    y:0,  w:W,      h:T,     c:TPL_COLORS[0]},       // 1 (Green)
+      {x:W-45-T, y:0, w:T,     h:35+T,  c:TPL_COLORS[1]},       // 2 (Cyan)
+      {x:W-45-T, y:35, w:45,   h:T,     c:TPL_COLORS[2]},       // 3 (Red)
+      {x:W-T,  y:35, w:T,      h:H-35,  c:TPL_COLORS[3]},       // 4 (Gray)
+    ],
+    layers:[
+      {name:'Back Wall',        color:TPL_COLORS[0], userW:R_W,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,     py:0,    pz:0},
+      {name:'Store Inner Wall', color:TPL_COLORS[1], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:120,   py:0,    pz:0},
+      {name:'Store Front',      color:TPL_COLORS[2], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:120,   py:80,   pz:0},
+      {name:'Right Wall',       color:TPL_COLORS[3], userW:R_SPR, userH:R_H, userUnit:'cm', ax:'z', rx:90, px:R_W,   py:80,   pz:0},
+    ]},
+
+  // ════════════ OTHER (CENTERED STORAGE) ════════════
+  { group:'other', label:'Centered storage only',
+    svgSegs:[
+      {x:0,       y:0,  w:60,      h:T,   c:TPL_COLORS[0]},     // 1 (Green) - Back L
+      {x:60,      y:0,  w:T,       h:35,  c:TPL_COLORS[1]},     // 2 (Cyan) - Side L
+      {x:60,      y:35, w:41,      h:T,   c:TPL_COLORS[2]},     // 3 (Red) - Front (Overlaps corners)
+      {x:96,      y:0,  w:T,       h:35,  c:TPL_COLORS[3]},     // 4 (Gray) - Side R
+      {x:101,     y:0,  w:W-101,   h:T,   c:TPL_COLORS[4]},     // 5 (Dark Blue) - Back R
+    ],
+    layers:[
+      {name:'Back Left',        color:TPL_COLORS[0], userW:75,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,   py:0,    pz:0},
+      {name:'Store Left Wall',  color:TPL_COLORS[1], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:75,  py:0,    pz:0},
+      {name:'Store Front',      color:TPL_COLORS[2], userW:100,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:75,  py:80,   pz:0},
+      {name:'Store Right Wall', color:TPL_COLORS[3], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:175, py:0,    pz:0},
+      {name:'Back Right',       color:TPL_COLORS[4], userW:75,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:175, py:0,    pz:0},
+    ]},
+
+  { group:'other', label:'Left wall + center store',
+    svgSegs:[
+      {x:0,       y:0,  w:T,       h:H,   c:TPL_COLORS[0]},     // 1 (Green) - Left Wall
+      {x:T,       y:0,  w:56,      h:T,   c:TPL_COLORS[1]},     // 2 (Cyan) - Back L
+      {x:61,      y:0,  w:T,       h:35,  c:TPL_COLORS[2]},     // 3 (Red) - Side L
+      {x:61,      y:35, w:41,      h:T,   c:TPL_COLORS[3]},     // 4 (Gray) - Front
+      {x:97,      y:0,  w:T,       h:35,  c:TPL_COLORS[4]},     // 5 (Dark Blue) - Side R
+      {x:102,     y:0,  w:W-102,   h:T,   c:TPL_COLORS[5]},     // 6 (Blue) - Back R
+    ],
+    layers:[
+      {name:'Left Wall',        color:TPL_COLORS[0], userW:R_D,   userH:R_H, userUnit:'cm', ax:'z', rx:90, px:0,   py:0,    pz:0},
+      {name:'Back Left',        color:TPL_COLORS[1], userW:75,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,   py:0,    pz:0},
+      {name:'Store Left Wall',  color:TPL_COLORS[2], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:75,  py:0,    pz:0},
+      {name:'Store Front',      color:TPL_COLORS[3], userW:100,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:75,  py:80,   pz:0},
+      {name:'Store Right Wall', color:TPL_COLORS[4], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:175, py:0,    pz:0},
+      {name:'Back Right',       color:TPL_COLORS[5], userW:75,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:175, py:0,    pz:0},
+    ]},
+
+  { group:'other', label:'Center store + right wall',
+    svgSegs:[
+      {x:0,       y:0,  w:60,      h:T,   c:TPL_COLORS[0]},     // 1 (Green) - Back L
+      {x:60,      y:0,  w:T,       h:35,  c:TPL_COLORS[1]},     // 2 (Cyan) - Side L
+      {x:60,      y:35, w:41,      h:T,   c:TPL_COLORS[2]},     // 3 (Red) - Front
+      {x:96,      y:0,  w:T,       h:35,  c:TPL_COLORS[3]},     // 4 (Gray) - Side R
+      {x:101,     y:0,  w:W-101-T, h:T,   c:TPL_COLORS[4]},     // 5 (Dark Blue) - Back R
+      {x:W-T,     y:0,  w:T,       h:H,   c:TPL_COLORS[5]},     // 6 (Blue) - Right Wall
+    ],
+    layers:[
+      {name:'Back Left',        color:TPL_COLORS[0], userW:75,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,   py:0,    pz:0},
+      {name:'Store Left Wall',  color:TPL_COLORS[1], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:75,  py:0,    pz:0},
+      {name:'Store Front',      color:TPL_COLORS[2], userW:100,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:75,  py:80,   pz:0},
+      {name:'Store Right Wall', color:TPL_COLORS[3], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:175, py:0,    pz:0},
+      {name:'Back Right',       color:TPL_COLORS[4], userW:75,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:175, py:0,    pz:0},
+      {name:'Right Wall',       color:TPL_COLORS[5], userW:R_D,   userH:R_H, userUnit:'cm', ax:'z', rx:90, px:R_W, py:0,    pz:0},
+    ]},
+
+  { group:'other', label:'Full wrap + center store',
+    svgSegs:[
+      {x:0,       y:0,  w:T,       h:H,   c:TPL_COLORS[0]},     // 1 (Green) - Left Wall
+      {x:T,       y:0,  w:56,      h:T,   c:TPL_COLORS[1]},     // 2 (Cyan) - Back L
+      {x:61,      y:0,  w:T,       h:35,  c:TPL_COLORS[2]},     // 3 (Red) - Side L
+      {x:61,      y:35, w:41,      h:T,   c:TPL_COLORS[3]},     // 4 (Gray) - Front
+      {x:97,      y:0,  w:T,       h:35,  c:TPL_COLORS[4]},     // 5 (Dark Blue) - Side R
+      {x:102,     y:0,  w:W-102-T, h:T,   c:TPL_COLORS[5]},     // 6 (Blue) - Back R
+      {x:W-T,     y:0,  w:T,       h:H,   c:TPL_COLORS[6]},     // 7 (Orange) - Right Wall
+    ],
+    layers:[
+      {name:'Left Wall',        color:TPL_COLORS[0], userW:R_D,   userH:R_H, userUnit:'cm', ax:'z', rx:90, px:0,   py:0,    pz:0},
+      {name:'Back Left',        color:TPL_COLORS[1], userW:75,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,   py:0,    pz:0},
+      {name:'Store Left Wall',  color:TPL_COLORS[2], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:75,  py:0,    pz:0},
+      {name:'Store Front',      color:TPL_COLORS[3], userW:100,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:75,  py:80,   pz:0},
+      {name:'Store Right Wall', color:TPL_COLORS[4], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:175, py:0,    pz:0},
+      {name:'Back Right',       color:TPL_COLORS[5], userW:75,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:175, py:0,    pz:0},
+      {name:'Right Wall',       color:TPL_COLORS[6], userW:R_D,   userH:R_H, userUnit:'cm', ax:'z', rx:90, px:R_W, py:0,    pz:0},
+    ]},
+];
+
+// ── Template picker ──────────────────────────────────────────────
+function openTplModal(){
+  const groups = {
+    '1wall':'tpl-row-1wall','2wall':'tpl-row-2wall','3wall':'tpl-row-3wall',
+    '1wall-s':'tpl-row-1wall-s','2wall-s':'tpl-row-2wall-s','other':'tpl-row-other'
+  };
+  Object.values(groups).forEach(id=>{ const el=document.getElementById(id); if(el) el.innerHTML=''; });
+  TEMPLATES.forEach((t,i)=>{
+    const rowId = groups[t.group]; if(!rowId) return;
+    const row = document.getElementById(rowId); if(!row) return;
+    const card = document.createElement('div');
+    card.className = 'tpl-card';
+    // Smaller thumbnails for the picker
+    const svgHtml = makeTplSvgSized(t.svgSegs, 150, 97);
+    card.innerHTML = svgHtml;
+    card.onclick = () => { closeTplModal(); openDetModal(i); };
+    row.appendChild(card);
+  });
+  document.getElementById('tpl-overlay').classList.add('open');
+}
+function closeTplModal(){ document.getElementById('tpl-overlay').classList.remove('open'); }
+document.getElementById('tpl-overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeTplModal(); });
+
+// ── Detail modal state ───────────────────────────────────────────
+let detTplIndex = 0;
+let detFiles = [];     // [{file, dataUrl, name, detectedW, detectedH, detectedUnit, assignedLayer}]
+let detLayers = [];    // copy of template layers, user-editable
+
+function parseDimFromName(name){
+  // Match patterns like 24x36in, 500x200cm, 100x200mm, 24X36IN
+  const m = name.match(/(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)\s*(in|cm|mm|ft)?/i);
+  if(!m) return null;
+  return { w: parseFloat(m[1]), h: parseFloat(m[2]), unit: (m[3]||'cm').toLowerCase() };
+}
+
+function openDetModal(tplIdx){
+  detTplIndex = tplIdx;
+  const tpl = TEMPLATES[tplIdx];
+  // Deep-copy layers
+  detLayers = tpl.layers.map((l,i) => ({
+    ...l,
+    userW: l.w, userH: l.h, userUnit:'cm',
+    userName: l.name,
+    fileIdx: null   // index into detFiles
+  }));
+  detFiles = [];
+  renderDetPreview();
+  renderDetFilelist();
+  renderDetLayers();
+  document.getElementById('det-title').textContent = `Configure: ${tpl.label}`;
+  document.getElementById('det-overlay').classList.add('open');
+}
+function closeDetModal(){ document.getElementById('det-overlay').classList.remove('open'); }
+document.getElementById('det-overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeDetModal(); });
+
+// ── Preview SVG ──────────────────────────────────────────────────
+function renderDetPreview(){
+  const tpl = TEMPLATES[detTplIndex];
+  const el = document.getElementById('det-preview');
+  el.innerHTML = makeTplSvg(tpl.svgSegs, 220, 140);
+}
+
+// ── Unified SVG renderer (scales base 156×100 coords to any output size) ──
+function makeTplSvgSized(segs, svgW, svgH){
+  const scaleX = svgW / W, scaleY = svgH / H;
+  const BG = '#c9b49a';
+  let out = `<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}">`;
+  out += `<rect x="0" y="0" width="${svgW}" height="${svgH}" fill="${BG}" rx="2"/>`;
+  segs.forEach(s => {
+    const x = (s.x * scaleX).toFixed(1),  y = (s.y * scaleY).toFixed(1);
+    const w = Math.max(s.w * scaleX, 1).toFixed(1), h = Math.max(s.h * scaleY, 1).toFixed(1);
+    out += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${s.c}" rx="1"/>`;
+  });
+  segs.forEach((s, i) => {
+    const cx = ((s.x + s.w / 2) * scaleX).toFixed(1);
+    const cy = ((s.y + s.h / 2) * scaleY).toFixed(1);
+    const r  = Math.max(5, Math.min(8, svgW / 22)).toFixed(1);
+    const fs = Math.max(5, Math.min(8, svgW / 22)).toFixed(1);
+    out += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${s.c}" stroke="white" stroke-width="1.5"/>`;
+    out += `<text x="${cx}" y="${(parseFloat(cy) + parseFloat(r) * 0.54).toFixed(1)}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="white" font-family="Inter,sans-serif">${i + 1}</text>`;
+  });
+  out += `</svg>`;
+  return out;
+}
+
+// makeTplSvg kept as alias for backward compat (used nowhere else, but safe)
+function makeTplSvg(segs, svgW=156, svgH=100){ return makeTplSvgSized(segs, svgW, svgH); }
+
+// ── Preview SVG (detail modal left panel) ───────────────────────
+function renderDetPreview(){
+  const tpl = TEMPLATES[detTplIndex];
+  document.getElementById('det-preview').innerHTML = makeTplSvgSized(tpl.svgSegs, 220, 141);
+}
+
+// ── File list ────────────────────────────────────────────────────
+function renderDetFilelist(){
+  const el = document.getElementById('det-file-list');
+  if(!detFiles.length){ el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:4px 0;">No files yet</div>'; return; }
+  el.innerHTML = detFiles.map((f,i)=>{
+    const layerNum = f.assignedLayer !== null && f.assignedLayer !== undefined ? f.assignedLayer+1 : null;
+    const numHtml = layerNum
+      ? `<span class="fi-num" style="background:${TPL_COLORS[f.assignedLayer]}">${layerNum}</span>`
+      : `<span class="fi-num unassigned">—</span>`;
+    return `<div class="det-file-item" draggable="true"
+      ondragstart="detFileDragStart(event,${i})"
+      id="det-fi-${i}">
+      ${numHtml}
+      <span class="fi-name" title="${f.name}">${f.name}</span>
+      <span class="fi-rm" onclick="detRemoveFile(${i})">×</span>
+    </div>`;
+  }).join('');
+}
+
+function detRemoveFile(idx){
+  // Unassign from any layer
+  detLayers.forEach(l=>{ if(l.fileIdx===idx) l.fileIdx=null; else if(l.fileIdx>idx) l.fileIdx--; });
+  detFiles.splice(idx,1);
+  renderDetFilelist();
+  renderDetLayers();
+}
+
+// ── Drag: file item from list → layer drop zone ──────────────────
+let detDragFileIdx = null;
+function detFileDragStart(e, idx){
+  detDragFileIdx = idx;
+  e.dataTransfer.effectAllowed = 'copy';
+  e.dataTransfer.setData('text/plain', String(idx));
+}
+
+// ── Layer cards ──────────────────────────────────────────────────
+function renderDetLayers(){
+  const el = document.getElementById('det-layers-list');
+  el.innerHTML = detLayers.map((l,i)=>{
+    const f = l.fileIdx !== null && l.fileIdx !== undefined ? detFiles[l.fileIdx] : null;
+    const fileLabel = f ? f.name : 'Drop file here';
+    const hasFile = !!f;
+    return `<div class="det-layer-card">
+      <div class="det-layer-card-head">
+        <div class="det-layer-num" style="background:${TPL_COLORS[i]}">${i+1}</div>
+        <input class="det-layer-name-input" value="${l.userName}"
+          oninput="detLayers[${i}].userName=this.value" placeholder="Layer name">
+      </div>
+      <div class="det-layer-body">
+        <input class="det-dim-input" value="${l.userW}" placeholder="W"
+          oninput="detLayers[${i}].userW=parseFloat(this.value)||detLayers[${i}].userW"
+          title="Width">
+        <span class="det-dim-sep">×</span>
+        <input class="det-dim-input" value="${l.userH}" placeholder="H"
+          oninput="detLayers[${i}].userH=parseFloat(this.value)||detLayers[${i}].userH"
+          title="Height">
+        <select class="det-unit-sel" onchange="detLayers[${i}].userUnit=this.value">
+          <option value="cm" ${l.userUnit==='cm'?'selected':''}>cm</option>
+          <option value="mm" ${l.userUnit==='mm'?'selected':''}>mm</option>
+          <option value="in" ${l.userUnit==='in'?'selected':''}>in</option>
+        </select>
+        <div class="det-file-drop ${hasFile?'has-file':''}" id="det-fd-${i}"
+          ondragover="detLayerDragOver(event,${i})"
+          ondragleave="detLayerDragLeave(event,${i})"
+          ondrop="detLayerFileDrop(event,${i})">
+          <input type="file" accept="image/*,application/pdf"
+            onchange="detLayerFileInput(this,${i})">
+          ${hasFile
+            ? `<span style="color:var(--green);margin-right:4px;">✓</span>${fileLabel}`
+            : `<span style="opacity:.5;">${fileLabel}</span>`}
+        </div>
+        ${hasFile ? `<span style="font-size:11px;color:var(--text3);cursor:pointer;" onclick="detLayerClearFile(${i})" title="Clear">×</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function detLayerDragOver(e,i){
+  e.preventDefault();
+  document.getElementById(`det-fd-${i}`)?.classList.add('drag-over');
+}
+function detLayerDragLeave(e,i){
+  document.getElementById(`det-fd-${i}`)?.classList.remove('drag-over');
+}
+
+function detLayerFileDrop(e,layerIdx){
+  e.preventDefault();
+  document.getElementById(`det-fd-${layerIdx}`)?.classList.remove('drag-over');
+
+  // 1. Dragging from the file list?
+  const fromListIdx = detDragFileIdx;
+  if(fromListIdx !== null && e.dataTransfer.getData('text/plain') !== ''){
+    detLayers[layerIdx].fileIdx = fromListIdx;
+    // Try to pull dims from that file's detected dims
+    const f = detFiles[fromListIdx];
+    if(f && f.detectedW){ detLayers[layerIdx].userW = f.detectedW; detLayers[layerIdx].userH = f.detectedH; detLayers[layerIdx].userUnit = f.detectedUnit; }
+    if(f) f.assignedLayer = layerIdx;
+    detDragFileIdx = null;
+    renderDetFilelist();
+    renderDetLayers();
+    return;
+  }
+
+  // 2. External file drop directly onto layer
+  const file = e.dataTransfer.files[0]; if(!file) return;
+  addDetFile(file, layerIdx);
+}
+
+function detLayerFileInput(input, layerIdx){
+  const file = input.files[0]; if(!file) return;
+  addDetFile(file, layerIdx);
+}
+
+function detLayerClearFile(i){
+  const prev = detLayers[i].fileIdx;
+  if(prev !== null && detFiles[prev]) detFiles[prev].assignedLayer = null;
+  detLayers[i].fileIdx = null;
+  renderDetFilelist();
+  renderDetLayers();
+}
+
+// ── Add file to global list ──────────────────────────────────────
+function addDetFile(file, assignTo=null){
+  // Check dupe by name
+  const existing = detFiles.findIndex(f=>f.name===file.name);
+  if(existing >= 0){
+    if(assignTo !== null){
+      if(detFiles[existing].assignedLayer !== null) { /* already has layer, reassign */ }
+      detFiles[existing].assignedLayer = assignTo;
+      detLayers[assignTo].fileIdx = existing;
+      const dims = parseDimFromName(file.name);
+      if(dims){ detLayers[assignTo].userW=dims.w; detLayers[assignTo].userH=dims.h; detLayers[assignTo].userUnit=dims.unit; }
+      renderDetFilelist(); renderDetLayers();
+    }
+    return;
+  }
+  if(detFiles.length >= 7){ alert('Maximum 7 files.'); return; }
+
+  const dims = parseDimFromName(file.name);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const entry = {
+      file,
+      name: file.name,
+      dataUrl: ev.target.result,
+      detectedW: dims?.w || null,
+      detectedH: dims?.h || null,
+      detectedUnit: dims?.unit || 'cm',
+      assignedLayer: assignTo
+    };
+    detFiles.push(entry);
+    const idx = detFiles.length - 1;
+    if(assignTo !== null){
+      detLayers[assignTo].fileIdx = idx;
+      if(dims){ detLayers[assignTo].userW=dims.w; detLayers[assignTo].userH=dims.h; detLayers[assignTo].userUnit=dims.unit; }
+    }
+    // Auto-match by name if no assignTo
+    if(assignTo === null){
+      const norm = f => f.replace(/\.[^/.]+$/,'').replace(/_(?:PROOF\d*|DIGITAL|PRINT|FINAL|APPROVED|V\d+|REV\d*|draft|proof\d*|digital|print|final|approved|v\d+|rev\d*)$/i,'').trim().toLowerCase();
+      const fNorm = norm(file.name);
+      const match = detLayers.findIndex(l => norm(l.userName) === fNorm || fNorm.includes(norm(l.userName)) || norm(l.userName).includes(fNorm));
+      if(match >= 0 && detLayers[match].fileIdx === null){
+        detLayers[match].fileIdx = idx;
+        entry.assignedLayer = match;
+        if(dims){ detLayers[match].userW=dims.w; detLayers[match].userH=dims.h; detLayers[match].userUnit=dims.unit; }
+      }
+    }
+    renderDetFilelist();
+    renderDetLayers();
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Quick Texture drop zone (left panel of detail modal) ─────────
+function detQtDragOver(e){ e.preventDefault(); document.getElementById('det-qt-drop').classList.add('over'); }
+function detQtDragLeave(e){ document.getElementById('det-qt-drop').classList.remove('over'); }
+function detQtDrop(e){
+  e.preventDefault();
+  document.getElementById('det-qt-drop').classList.remove('over');
+  const files = Array.from(e.dataTransfer.files);
+  if(detFiles.length + files.length > 7){ alert('Maximum 7 files total.'); }
+  files.slice(0, 7 - detFiles.length).forEach(f => addDetFile(f, null));
+}
+
+// ── Unit conversion helper ───────────────────────────────────────
+function toLocalCm(val, unit){
+  if(unit==='mm') return val/10;
+  if(unit==='in') return val*2.54;
+  return val;
+}
+
+// ── Apply template to scene ──────────────────────────────────────
+async function applyDetTemplate(){
+  if(objects.length && !confirm('Replace current scene with template? Unsaved changes will be lost.')) return;
+  saveState();
+  objects = []; comments = []; selectedIds = [];
+
+  // Add floor
+  objects.push(mkPlane({name:'Floor', x:0, y:0, z:0, w:793.6, h:500, axis:'floor', color:'#dcdcdc'}));
+
+  for(const [i, layer] of detLayers.entries()){
+    const wCm = toLocalCm(layer.userW, layer.userUnit);
+    const hCm = toLocalCm(layer.userH, layer.userUnit);
+    const o = mkPlane({
+      name: layer.userName,
+      x: layer.px, y: layer.py, z: layer.pz,
+      w: wCm, h: hCm,
+      axis: layer.ax === 'floor' ? 'floor' : 'z',
+      rotZ: layer.rx,
+      color: layer.color
+    });
+
+    // Apply image if assigned
+    if(layer.fileIdx !== null && detFiles[layer.fileIdx]){
+      const f = detFiles[layer.fileIdx];
+      await processAndSetImage(f.file, o, ()=>{}, null);
+    }
+    objects.push(o);
+  }
+
+  closeDetModal();
+  fitView();
+  render();
+  updateProps();
+  updateLayers();
+}
 
 if(!objects.length)initDemo();
 fitView();
