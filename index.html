@@ -837,13 +837,15 @@ function drawCssPlane(scene, p) {
         img.style.height = '100%';
         img.style.objectFit = p.imgOpts?.fit === 'fit' ? 'contain' : 'fill';
         
-        let defaultRx = -1; 
-        let defaultRy = p.axis === 'floor' ? -1 : 1;
+        // defaultRx=-1 corrects the back-face mirror from rotateX(-90deg).
+        // _faceCorrect=true means viewer sees front face — no mirror correction needed.
+        const baseRx = p._faceCorrect ? 1 : -1;
+        const defaultRy = p.axis === 'floor' ? -1 : 1;
 
-        let rx = p.imgOpts?.flipH ? -defaultRx : defaultRx;
-        let ry = p.imgOpts?.flipV ? -defaultRy : defaultRy;
-        let rot = p.imgOpts?.rot || 0;
-        
+        const rx = p.imgOpts?.flipH ? -baseRx : baseRx;
+        const ry = p.imgOpts?.flipV ? -defaultRy : defaultRy;
+        const rot = p.imgOpts?.rot || 0;
+
         img.style.transform = `rotate(${rot}deg) scale(${rx}, ${ry})`;
         img.style.pointerEvents = 'none';
         div.appendChild(img);
@@ -893,6 +895,8 @@ function drawCssPlane(scene, p) {
         max-width:calc(100% - 10px);
         overflow:hidden;
         text-overflow:ellipsis;
+        transform:scaleX(${p._faceCorrect ? 1 : -1});
+        transform-origin:left center;
       `;
       lbl.textContent = p.name;
       div.appendChild(lbl);
@@ -1063,7 +1067,7 @@ function drawFlatOverlay(){
       img.style.height = '100%';
       img.style.display = 'block';
       img.style.objectFit = p.imgOpts?.fit === 'fit' ? 'contain' : 'fill';
-      const rx = p.imgOpts?.flipH ? 1 : -1;
+      const rx = 1;
       const ry = p.imgOpts?.flipV ? -1 : 1;
       const rot = p.imgOpts?.rot || 0;
       img.style.transform = `rotate(${rot}deg) scale(${rx},${ry})`;
@@ -2987,7 +2991,7 @@ async function exportFlatFormat(type){
     const y = maxH - p.h; // align bottoms
     svgParts.push(`<g>`);
     if(p.image && imageData[i]){
-      const rx = p.imgOpts?.flipH ? 1 : -1;
+      const rx = 1;
       const ry = p.imgOpts?.flipV ? -1 : 1;
       const rot = p.imgOpts?.rot || 0;
       const cx = x + p.w / 2, cy = y + p.h / 2;
@@ -3582,7 +3586,7 @@ function renderDetLayers(){
       style="border-left:5px solid ${color};">
       <div class="det-layer-card-head">
         <div class="det-layer-num" style="background:${color}">${i+1}</div>
-        <input class="det-layer-name-input" value="${hasFile ? dispName : (l.userName || '')}"
+        <input class="det-layer-name-input" value="${l.userName || ''}"
           oninput="detLayers[${i}].userName=this.value" placeholder="Layer name">
         ${hasFile ? `<span style="font-size:11px;color:var(--text3);cursor:pointer;flex-shrink:0;padding:0 2px;" onclick="event.stopPropagation();detLayerClearFile(${i})" title="Clear">×</span>` : ''}
       </div>
@@ -3759,14 +3763,14 @@ async function applyDetTemplate() {
 
   else if (lbl === 'Back + Right') {
     boothWalls.push({ idx:0, x:0,    y:0, r:0,  flipH:true }); // Back flip
-    boothWalls.push({ idx:1, x:W(0), y:0, r:90             }); // Right
+    boothWalls.push({ idx:1, x:W(0), y:0, r:90, flipH:true }); // Right
   }
 
   // ── 3 WALLS ─────────────────────────────────────────────────────
   else if (lbl === 'Left + Back + Right') {
     boothWalls.push({ idx:0, x:0,    y:0, r:90             }); // Left
     boothWalls.push({ idx:1, x:0,    y:0, r:0,  flipH:true }); // Back flip
-    boothWalls.push({ idx:2, x:W(1), y:0, r:90             }); // Right
+    boothWalls.push({ idx:2, x:W(1), y:0, r:90, flipH:true }); // Right
   }
 
   // ── 1 WALL + STORAGE ─────────────────────────────────────────────
@@ -3775,8 +3779,8 @@ async function applyDetTemplate() {
     // 1.svg: vertical down, horizontal right, vertical up, horizontal right
     const storeDepth = W(1); // StoreFront width = store depth
     const storeWidth = W(0); // StoreLeftWall width = store box width
-    boothWalls.push({ idx:0, x:0,          y:0,          r:90            }); // 1: Store Left Wall  (vertical)
-    boothWalls.push({ idx:1, x:0,          y:storeDepth, r:0             }); // 2: Store Front      (horizontal)
+    boothWalls.push({ idx:0, x:0,          y:0,          r:90, flipH:true }); // 1: Store Left Wall  (vertical)
+    boothWalls.push({ idx:1, x:0,          y:storeDepth, r:0, flipH:true }); // 2: Store Front      (horizontal)
     boothWalls.push({ idx:2, x:storeWidth, y:0,          r:90            }); // 3: Store Inner Wall (vertical)
     boothWalls.push({ idx:3, x:storeWidth, y:0,          r:0, flipH:true }); // 4: Back Wall        (horizontal, flip)
   }
@@ -3791,7 +3795,7 @@ async function applyDetTemplate() {
     const storeDepth = W(1);
     const storeFrontW = W(2);
     boothWalls.push({ idx:0, x:0,                    y:0,          r:0,  flipH:true }); // 1: Back Wall
-    boothWalls.push({ idx:1, x:backW,                 y:0,          r:90            }); // 2: Store Inner Wall
+    boothWalls.push({ idx:1, x:backW,                 y:0,          r:90, flipH:true }); // 2: Store Inner Wall
     boothWalls.push({ idx:2, x:backW,                 y:storeDepth, r:0,  flipH:true }); // 3: Store Front
     boothWalls.push({ idx:3, x:backW + storeFrontW,   y:0,          r:90            }); // 4: Store Right Wall
   }
@@ -3807,7 +3811,7 @@ async function applyDetTemplate() {
     const storeDepth = W(1); // StoreFront width = how deep it protrudes
     const storeWidth = W(2); // StoreInnerWall x-position
     boothWalls.push({ idx:0, x:0,          y:storeWidth, r:90             }); // 1: Left Wall
-    boothWalls.push({ idx:1, x:0,          y:storeWidth, r:0              }); // 2: Store Front
+    boothWalls.push({ idx:1, x:0,          y:storeWidth, r:0, flipH:true  }); // 2: Store Front
     boothWalls.push({ idx:2, x:storeDepth, y:0,          r:90             }); // 3: Store Inner Wall
     boothWalls.push({ idx:3, x:storeDepth, y:0,          r:0,  flipH:true }); // 4: Back Wall flip
   }
@@ -3823,9 +3827,9 @@ async function applyDetTemplate() {
     const storeDepth  = W(1); // StoreInnerWall width = depth
     const storeFrontW = W(2);
     boothWalls.push({ idx:0, x:0,                   y:0,            r:0,  flipH:true });  // 1: Back Wall flip
-    boothWalls.push({ idx:1, x:backW,               y:0,            r:90             });  // 2: Store Inner Wall
+    boothWalls.push({ idx:1, x:backW,               y:0,            r:90, flipH:true });  // 2: Store Inner Wall
     boothWalls.push({ idx:2, x:backW,               y:storeDepth,   r:0,  flipH:true });  // 3: Store Front flip
-    boothWalls.push({ idx:3, x:backW + storeFrontW, y:storeDepth,  r:90             });  // 4: Right Wall
+    boothWalls.push({ idx:3, x:backW + storeFrontW, y:storeDepth,   r:90, flipH:true });  // 4: Right Wall
   }
 
   // ── OTHER: CENTERED STORAGE ───────────────────────────────────────
@@ -3885,7 +3889,8 @@ async function applyDetTemplate() {
     // Apply flip correction: defaultRx is -1 in drawCssPlane,
     // so walls that face correctly need flipH:true to cancel it out.
     if (!o.imgOpts) o.imgOpts = {};
-    o.imgOpts.flipH = config.flipH === true;
+    o.imgOpts.flipH = false;        // user flip, always starts false
+    o._faceCorrect = config.flipH === true; // true = viewer sees front face, no mirror needed
 
     if (layer.fileIdx !== null && detFiles[layer.fileIdx]) {
       await processAndSetImage(detFiles[layer.fileIdx].file, o, () => {}, null);
