@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BoothCraft — Trade Show 3D Builder</title>
+<title>Nilfisk BoothCraft</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 :root{
@@ -134,22 +134,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .tpl-box{border:1px solid var(--border);border-radius:var(--radius);padding:10px 10px;background:#fff;flex:auto;width: max-content;}
 .tpl-box-label{font-size:10px;font-weight:600;color:var(--text2);letter-spacing:.3px;margin-bottom:10px;line-height:1.4;}
 .tpl-cards-row{display:flex;gap:8px;flex-wrap:wrap;}
-.tpl-card{cursor:pointer;transition:all .15s;overflow:hidden;background:var(--surface);flex-shrink:0;}
+.tpl-card{cursor:pointer;transition:all .15s;overflow:visible;background:var(--surface);flex-shrink:0;}
 .tpl-card:hover{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
-.tpl-card svg{display:block;}
+.tpl-card svg{display:block;overflow:visible;}
 
 /* ── DETAIL MODAL ── */
 #det-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2100;display:none;align-items:center;justify-content:center;}
 #det-overlay.open{display:flex;}
-#det-modal{background:var(--surface);border-radius:10px;box-shadow:var(--shadow-lg);width:min(860px,96vw);max-height:92vh;display:flex;flex-direction:column;overflow:hidden;}
+#det-modal{background:var(--surface);border-radius:10px;box-shadow:var(--shadow-lg);width:min(1000px,96vw);max-height:92vh;display:flex;flex-direction:column;overflow:hidden;}
 #det-modal-head{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border);gap:10px;flex-shrink:0;}
 #det-modal-head h2{font-size:14px;font-weight:600;flex:1;}
 #det-body{display:flex;gap:0;flex:1;overflow:hidden;min-height:0;}
-#det-left{width:260px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
-#det-preview{padding:14px;border-bottom:1px solid var(--border);}
-#det-preview svg{width:100%;height:auto;display:block;}
-#det-files-section{flex:1;overflow-y:auto;padding:10px 12px;}
-#det-files-section .sec-lbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px;}
+#det-left{display:none;}
+#det-preview{padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:center;position:relative;}
+#det-preview svg{display:block;width:100%;height:auto;}
+#det-preview-wrap{position:relative;width:100%;max-width:660px;}
+.det-seg-drop{position:absolute;cursor:pointer;transition:outline .1s,opacity .1s;opacity:0.5;}
+.det-seg-drop.drag-over{border: 1px solid black ;background: #EFF0F2;opacity:0.3; transition:all 0.15s;}
+.det-seg-drop.has-file{background: #EFF0F2; opacity:0.6;}
 #det-qt-drop{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:10px 8px;text-align:center;color:var(--text3);font-size:10px;cursor:pointer;transition:all .15s;margin-bottom:8px;}
 #det-qt-drop.over{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);}
 .det-file-item{display:flex;align-items:center;gap:6px;padding:4px 6px;background:var(--surface3);border-radius:var(--radius-sm);margin-bottom:3px;cursor:grab;font-size:10px;color:var(--text2);border:1px solid var(--border);}
@@ -160,13 +162,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .det-file-item .fi-rm:hover{color:var(--red);}
 #det-right{flex:1;overflow-y:auto;padding:14px;}
 #det-layers-list{display:flex;flex-direction:column;gap:8px;}
-.det-layer-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
-.det-layer-card-head{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.det-layer-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:border-color .12s,background .12s;}
+.det-layer-card.drag-over{border-color:var(--accent);background:var(--accent-bg);}
+.det-layer-card-head{display:flex;align-items:center;gap:8px;padding:7px 10px; border-bottom:1px solid var(--border);border-left:5px solid transparent;}
 .det-layer-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
-.det-layer-name-input{flex:1;height:22px;padding:0 6px;background:var(--surface);border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:11px;color:var(--text);outline:none;}
+.det-layer-name-input{flex:1;height:22px;padding:0 6px;border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:11px;color:var(--text);outline:none;background:transparent;}
 .det-layer-name-input:focus{border-color:var(--accent);}
-.det-layer-body{display:flex;gap:6px;padding:8px 10px;align-items:center;}
-.det-dim-input{width:64px;height:24px;padding:0 6px;background:var(--surface3);border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:11px;color:var(--text);outline:none;text-align:center;}
+.det-layer-body{display:flex;gap:6px;padding:8px 10px 10px 50px;align-items:center;}
+.det-dim-input{width:50px;height:24px;padding:0 6px;background:var(--surface3);border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:11px;color:var(--text);outline:none;text-align:center;}
 .det-dim-input:focus{border-color:var(--accent);background:var(--surface);}
 .det-dim-sep{font-size:11px;color:var(--text3);}
 .det-unit-sel{height:24px;padding:0 4px;background:var(--surface3);border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:10px;color:var(--text2);outline:none;cursor:pointer;}
@@ -305,7 +308,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 <!-- TOOLBAR -->
 <div id="toolbar">
   <div class="tb-left">
-  <div class="logo"><div class="logo-dot"></div>BoothCraft</div>
+  <div class="logo"><div class="logo-dot"></div>Nilfisk BoothCraft</div>
   <div class="tb-sep"></div>
   <button class="tb-btn" onclick="newScene()">New</button>
   <button class="tb-btn" onclick="openTplModal()">Template</button>
@@ -326,26 +329,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <div class="tb-group">
       <button class="tb-btn active" id="btn-snap" onclick="toggleSnap()">Snap</button>
       <button class="tb-btn" id="btn-grid" onclick="toggleGrid()">Grid</button>
+      <button class="tb-btn" id="btn-names" onclick="toggleNames()">Names</button>
     </div>
 
     <div class="tb-group">
       <button class="tb-btn active" id="mode-ortho" onclick="setProjMode('ortho')">Ortho</button>
-      <button class="tb-btn" id="mode-persp" onclick="setProjMode('persp')" style="gap:5px;">
-		  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg" id="persp-origin-icon">
-			<circle cx="1.5"  cy="11.5" r="1.5" fill="currentColor"/>
-			<circle cx="6.5"  cy="11.5" r="1.5" fill="currentColor"/>
-			<circle cx="11.5" cy="11.5" r="1.5" fill="currentColor"/>
-			<circle cx="3"    cy="6.5"  r="1.5" fill="currentColor"/>
-			<circle cx="7.5"  cy="6.5"  r="1.5" fill="currentColor"/>
-			<circle cx="11.5" cy="6.5"  r="1.5" fill="currentColor"/>
-			<circle cx="4.5"  cy="1.5"  r="1.5" fill="currentColor"/>
-			<circle cx="8.5"  cy="1.5"  r="1.5" fill="currentColor"/>
-			<circle cx="11.5" cy="1.5"  r="1.5" fill="currentColor"/>
-		  </svg>
-		  Persp
-		</button>    </div>
+      <button class="tb-btn" id="mode-persp" onclick="setProjMode('persp')" style="gap:5px;">Persp</button>
+      <button class="tb-btn" id="mode-flat" onclick="setProjMode('flat')">Flat</button>
+    </div>
 
-    <div class="tb-group">
+    <div class="tb-group" id="view-group-positions">
       <button class="tb-btn" id="vb-tl" onclick="setView('tl')">TL</button>
       <button class="tb-btn" id="vb-tr" onclick="setView('tr')">TR</button>
       <button class="tb-btn" id="vb-front" onclick="setView('front')">Front</button>
@@ -360,7 +353,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   </div>
 
   <div class="tb-right">
-    <button class="btn-primary" onclick="toggleExportMenu(event)"><svg width="11" height="11" viewBox="0 0 11 11" fill="none" style="margin-right:3px;"><rect x="1" y="2" width="9" height="7" rx="1" stroke="white" stroke-width="1.1"/><circle cx="5.5" cy="5.5" r="1.5" stroke="white" stroke-width="1.1"/></svg>Export to ▾</button>
+    <button class="btn-primary" onclick="toggleExportMenu(event)">Export to ▾</button>
     <div class="dropdown-content" id="export-menu">
       <div class="dropdown-item" onclick="exportFormat('svg')">SVG Vector</div>
       <div class="dropdown-item" onclick="exportFormat('png')">PNG Image</div>
@@ -389,7 +382,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
         ondrop="qtDrop(event)">
         ↓ Drop images / PDFs<br>matched by filename
       </div>
-      <div id="qt-results"></div>
+
     </div>
     <div class="panel-scroll" id="layer-list"></div>
   </div>
@@ -509,20 +502,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
       <h2 id="det-title">Configure Booth Layers</h2>
       <button class="tpl-close" onclick="closeDetModal()">×</button>
     </div>
-    <div id="det-body">
-      <div id="det-left">
-        <div id="det-preview"></div>
-        <div id="det-files-section">
-          <div class="sec-lbl">List of files</div>
-          <div id="det-qt-drop"
-            ondragover="detQtDragOver(event)"
-            ondragleave="detQtDragLeave(event)"
-            ondrop="detQtDrop(event)">
-            ↓ Drop images / PDFs here
-          </div>
-          <div id="det-file-list"></div>
-        </div>
+	<div id="det-body" style="flex-direction:column;">
+      <div id="det-preview">
+        <div id="det-preview-wrap"></div>
       </div>
+      <div id="det-left"></div>
       <div id="det-right">
         <div id="det-layers-list"></div>
       </div>
@@ -541,13 +525,20 @@ const SVG_NS='http://www.w3.org/2000/svg';
 // ── STATE ──────────────────────────────────────────────────────────────
 let objects=[];
 let comments=[];
-let selectedIds=[]; // Changed to Array for Multi-Select
+let selectedIds=[];
 let selectedCubeFace='front';
+let hoveredLayerId = null;
 let tool='select';
 let unit='cm';
 let showGrid=false;
+let showNames=false;
 let snapEnabled=true;
 let isPerspective=false;
+let isFlat=false;
+let _flatNeedsAutoFit = false;
+let _flatSavedSnap = true;
+let _flatSavedGrid = false;
+let flatPanX=0, flatPanY=0, flatZoomS=1; // flat mode owns its own camera state
 let perspOrigin={x:0,y:0,z:0}; // world-space perspective vanishing origin
 let lastOriginXf=0, lastOriginZf=0; // track which dot is selected
 
@@ -751,6 +742,10 @@ function mkEl(t){return document.createElementNS(SVG_NS,t);}
 
 function render(){
   ensurePerspOriginOverlay();
+  if(isFlat && _flatNeedsAutoFit){
+    _flatNeedsAutoFit = false;
+    flatFitView();
+  }
   const vp=document.getElementById('viewport');
   const W=vp.clientWidth, H=vp.clientHeight;
   
@@ -773,10 +768,14 @@ function render(){
       sceneNode.appendChild(grid);
   }
 
-  objects.filter(o=>o.visible).forEach(o => {
-    if(o.type === 'plane') drawCssPlane(sceneNode, o);
-    else drawCssCube(sceneNode, o);
-  });
+  if(!isFlat) {
+    objects.filter(o=>o.visible).forEach(o => {
+      if(o.type === 'plane') drawCssPlane(sceneNode, o);
+      else drawCssCube(sceneNode, o);
+    });
+  }
+  // flat mode draws into its own 2D overlay, see drawFlatMode()
+  drawFlatOverlay();
 
   svg.setAttribute('width', W);
   svg.setAttribute('height', H);
@@ -787,7 +786,7 @@ function render(){
   g.setAttribute('transform',`translate(${cx},${cy}) scale(${zoomS})`);
   svg.appendChild(g);
 
-  if(selectedIds.length > 0){
+  if(!isFlat && selectedIds.length > 0){
     selectedIds.forEach(id => {
       const o=objects.find(o=>o.id===id);
       if(o&&o.visible){
@@ -796,9 +795,14 @@ function render(){
       }
     });
   }
-  if(snapEnabled&&(snapLines.x!==null||snapLines.y!==null))drawSnapLines(g);
+  if(!isFlat && snapEnabled&&(snapLines.x!==null||snapLines.y!==null))drawSnapLines(g);
 
   updateDimInputs();
+  // In flat mode, also clear and hide any existing dim-layer inputs
+  if(isFlat){
+    const dimLayer = document.getElementById('dim-layer');
+    if(dimLayer) dimLayer.innerHTML = '';
+  }
   renderComments();
   updateLayers();
   updateStatusBar();
@@ -870,6 +874,29 @@ function drawCssPlane(scene, p) {
     });
 
     scene.appendChild(div);
+
+    if (showNames) {
+      const lbl = document.createElement('div');
+      lbl.style.cssText = `
+        position:absolute;
+        top:4px; left:4px;
+        padding:1px 5px;
+        background:rgba(0,0,0,0.45);
+        color:#fff;
+        font-family:'Inter',sans-serif;
+        font-size:10px;
+        font-weight:500;
+        border-radius:3px;
+        pointer-events:none;
+        white-space:nowrap;
+        line-height:16px;
+        max-width:calc(100% - 10px);
+        overflow:hidden;
+        text-overflow:ellipsis;
+      `;
+      lbl.textContent = p.name;
+      div.appendChild(lbl);
+    }	
 }
 
 function drawCssCube(scene, o) {
@@ -946,9 +973,126 @@ function drawCssCube(scene, o) {
         if (selectedIds.includes(o.id)) {
             face.style.boxShadow = 'inset 0 0 0 1.5px #0d99ff';
         }
+        if (showNames && f.name === 'top') {
+          const lbl = document.createElement('div');
+          lbl.style.cssText = `
+            position:absolute;
+            top:4px; left:4px;
+            padding:1px 5px;
+            background:rgba(0,0,0,0.45);
+            color:#fff;
+            font-family:'Inter',sans-serif;
+            font-size:10px;
+            font-weight:500;
+            border-radius:3px;
+            pointer-events:none;
+            white-space:nowrap;
+            line-height:16px;
+            max-width:calc(100% - 10px);
+            overflow:hidden;
+            text-overflow:ellipsis;
+          `;
+          lbl.textContent = o.name;
+          face.appendChild(lbl);
+        }
         cube.appendChild(face);
     });
     scene.appendChild(cube);
+}
+
+function drawFlatOverlay(){
+  const vp = document.getElementById('viewport');
+
+  // Get or create the flat overlay container
+  let overlay = document.getElementById('flat-overlay');
+  if(!isFlat){
+    if(overlay) overlay.style.display = 'none';
+    return;
+  }
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'flat-overlay';
+    overlay.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:5;';
+    vp.appendChild(overlay);
+  }
+  overlay.style.display = 'block';
+  overlay.innerHTML = '';
+
+  const planes = objects.filter(o => o.type === 'plane' && o.visible && o.axis !== 'floor');
+  if(!planes.length) return;
+
+  // Total strip width and max height in world units
+  let totalW = 0;
+  let maxH = 0;
+  planes.forEach(p => { totalW += p.w; maxH = Math.max(maxH, p.h); });
+
+  const vpW = vp.clientWidth;
+  const vpH = vp.clientHeight;
+
+  // The strip origin in screen space:
+  // panX/panY is the offset of world-origin from viewport center
+  const originScreenX = vpW / 2 + panX;
+  const originScreenY = vpH / 2 + panY;
+
+  let cursorX = 0;
+
+  planes.forEach((p) => {
+    const screenX = originScreenX + cursorX * zoomS;
+    const screenY = originScreenY - p.h * zoomS; // panels hang upward from baseline
+
+    const div = document.createElement('div');
+    div.style.cssText = `
+      position:absolute;
+      left:${screenX}px;
+      top:${screenY}px;
+      width:${p.w * zoomS}px;
+      height:${p.h * zoomS}px;
+      background-color:${p.image ? 'transparent' : p.color};
+      opacity:${p.opacity};
+      box-sizing:border-box;
+      outline:${selectedIds.includes(p.id) ? '2px solid #0d99ff' : '1px solid rgba(0,0,0,0.12)'};
+      pointer-events:auto;
+      cursor:default;
+      overflow:hidden;
+    `;
+
+    if(p.image){
+      const img = document.createElement('img');
+      img.src = p.image;
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.display = 'block';
+      img.style.objectFit = p.imgOpts?.fit === 'fit' ? 'contain' : 'fill';
+      const rx = p.imgOpts?.flipH ? 1 : -1;
+      const ry = p.imgOpts?.flipV ? -1 : 1;
+      const rot = p.imgOpts?.rot || 0;
+      img.style.transform = `rotate(${rot}deg) scale(${rx},${ry})`;
+      img.style.pointerEvents = 'none';
+      div.appendChild(img);
+    }
+
+    if(showNames){
+      const lbl = document.createElement('div');
+      lbl.style.cssText = `
+        position:absolute; top:6px; left:6px;
+        padding:1px 5px; background:rgba(0,0,0,0.45); color:#fff;
+        font-family:'Inter',sans-serif; font-size:${Math.max(9, 10 * zoomS)}px; font-weight:500;
+        border-radius:3px; pointer-events:none; white-space:nowrap;
+        line-height:16px; max-width:calc(100% - 12px); overflow:hidden; text-overflow:ellipsis;
+      `;
+      lbl.textContent = p.name;
+      div.appendChild(lbl);
+    }
+
+    div.addEventListener('mousedown', e => {
+      if(e.button !== 0) return;
+      e.stopPropagation();
+      selectObject(p.id, e.shiftKey || e.metaKey || e.ctrlKey);
+    });
+
+    overlay.appendChild(div);
+    cursorX += p.w;
+  });
 }
 
 function makeDashLine(x1,y1,x2,y2,cxV,cyV){
@@ -968,7 +1112,7 @@ function makeDashLine(x1,y1,x2,y2,cxV,cyV){
 function updateDimInputs(){
   const oldLines = svg.querySelectorAll('.dim-dash-line');
   oldLines.forEach(l => l.remove());
-
+  if(isFlat) return;
   let container=document.getElementById('dim-layer');
   if(!container){
     container=document.createElement('div');
@@ -1516,11 +1660,15 @@ function vpDown(e){
   
   if(e.button===0&&!hit&&tool==='select'){
     selectedIds=[];ctxTarget=null;render();updateProps();
-    isOrbiting=true;orbitSX=e.clientX;orbitSY=e.clientY;
-    orbitCamZ=camZ;orbitCamX=camX;
-	orbitCenter=getSceneCenter();
-    orbitStartProj=proj(orbitCenter.x,orbitCenter.y,orbitCenter.z);
-    orbitPanX=panX;orbitPanY=panY;
+    if(isFlat){
+      isPanning=true;panSX=e.clientX;panSY=e.clientY;panOX=panX;panOY=panY;
+    } else {
+      isOrbiting=true;orbitSX=e.clientX;orbitSY=e.clientY;
+      orbitCamZ=camZ;orbitCamX=camX;
+      orbitCenter=getSceneCenter();
+      orbitStartProj=proj(orbitCenter.x,orbitCenter.y,orbitCenter.z);
+      orbitPanX=panX;orbitPanY=panY;
+    }
     e.preventDefault();return;
   }
   
@@ -1701,6 +1849,62 @@ function vpMove(e){
     });
 
     render();updateProps();return;
+  }
+  
+  if(isResizing && resizeNode){
+    hasMoved = true;
+    const obj = objects.find(o => o.id === resizeNode.id);
+    if(!obj) return;
+    const off = window.resizeOffsets.find(o => o.id === resizeNode.id);
+    if(!off) return;
+
+    const dx = (e.clientX - dragSX) / zoomS;
+    const dy = (e.clientY - dragSY) / zoomS;
+    const p0 = proj(off.ox, off.oy, off.oz);
+    let { dwx, dwy } = getWMPosDelta(dx, dy, p0.sz);
+
+    // Decompose delta into along-wall (local X) and height (world Z)
+    const rZ = (off.rotZ || 0) * Math.PI / 180;
+    const cosR = Math.cos(rZ), sinR = Math.sin(rZ);
+    // local_u = component along the wall direction
+    const local_u = dwx * cosR + dwy * sinR;
+    // height change comes from the screen vertical mapped to world Z
+    const effectiveCosX = Math.max(0.1, Math.cos(camX));
+    const scale = isPerspective ? 6000 / (6000 - p0.sz) : 1;
+    const dz = -( (e.clientY - dragSY) / zoomS ) / (effectiveCosX * CM_PX * scale);
+
+    const sv = v => snapEnabled ? Math.max(5, snapV(v)) : Math.max(5, r2(v));
+    const pi = resizeNode.pIndex;
+
+    // Corners: 0=BL(x,y,z), 1=BR(x+w,y+w,z), 2=BR-top, 3=BL-top
+    // Edges:   4=bottom, 5=right, 6=top, 7=left
+    // BL corner = (obj.x, obj.y), wall runs along rotZ direction for width w
+    // Height runs in +Z
+
+    if(pi === 1 || pi === 2 || pi === 5) {
+      // Right edge / right corners — stretch width rightward
+      const newW = sv(off.ow + local_u);
+      obj.w = newW;
+    }
+    if(pi === 0 || pi === 3 || pi === 7) {
+      // Left edge / left corners — move origin, shrink width
+      const newW = sv(off.ow - local_u);
+      obj.w = newW;
+      obj.x = r2(off.ox + (off.ow - newW) * cosR);
+      obj.y = r2(off.oy + (off.ow - newW) * sinR);
+    }
+    if(pi === 3 || pi === 2 || pi === 6) {
+      // Top edge / top corners — stretch height upward (+Z)
+      obj.h = sv(off.oh + dz);
+    }
+    if(pi === 0 || pi === 1 || pi === 4) {
+      // Bottom edge / bottom corners — move origin Z, shrink height
+      const newH = sv(off.oh - dz);
+      obj.h = newH;
+      obj.z = r2(off.oz + (off.oh - newH));
+    }
+
+    render(); updateProps(); return;
   }
   
   // Only start dragging if mouse moves more than 5 pixels
@@ -1925,22 +2129,24 @@ function qtDrop(e){
   const files = Array.from(e.dataTransfer.files);
   if(!files.length) return;
 
-  const results = [];
   let pending = files.length;
+  let hasSuccess = false;
 
   function finish(){
     const resEl = document.getElementById('qt-results');
-    if(results.length){
+    
+    // Flash green if at least one match was successful, otherwise flash orange
+    if(hasSuccess){
       drop.classList.add('success');
       setTimeout(()=>drop.classList.remove('success'), 1800);
-      resEl.innerHTML = results.map(r =>
-        `<span style="color:${r.ok?'var(--green)':'var(--orange)'};">${r.ok?'✓':'✗'}</span> ${r.msg}`
-      ).join('<br>');
     } else {
       drop.classList.add('error');
       setTimeout(()=>drop.classList.remove('error'), 1800);
-      resEl.innerHTML = '<span style="color:var(--orange);">No matching layers found.</span>';
     }
+    
+    // Clear the results div (do not show the list)
+    if (resEl) resEl.innerHTML = '';
+    
     saveState();
     render();
     updateProps();
@@ -1955,7 +2161,6 @@ function qtDrop(e){
     if(!matched) matched = objects.find(o => normalizedFile.startsWith(qtNormalizeName(o.name)) || qtNormalizeName(o.name).startsWith(normalizedFile));
 
     if(!matched){
-      results.push({ ok: false, msg: `"${file.name}" — no match` });
       if(--pending === 0) finish();
       return;
     }
@@ -1963,7 +2168,7 @@ function qtDrop(e){
     const targetFace = matched.type === 'cube' ? 'front' : null;
 
     processAndSetImage(file, matched, () => {
-      results.push({ ok: true, msg: `"${file.name}" → ${matched.name}${targetFace ? ` (${targetFace})` : ''}` });
+      hasSuccess = true;
       if(--pending === 0) finish();
     }, targetFace);
   });
@@ -2052,6 +2257,7 @@ function submitComment(objId, lx, ly, face){
 
 function renderComments(){
   document.querySelectorAll('.comment-pin').forEach(e=>e.remove());
+  if(isFlat) return;
   comments.forEach(c=>{
     const obj = objects.find(o => o.id === c.objId);
     if(!obj || !obj.visible) return;
@@ -2332,12 +2538,46 @@ function setCubeImgOpt(k,v,remove=false){
   render();updateProps();
 }
 function setProjMode(mode){
+  const wasFlat = isFlat;
+  isFlat = (mode === 'flat');
   isPerspective = (mode === 'persp');
-  document.getElementById('mode-ortho').classList.toggle('active', !isPerspective);
+
+  document.getElementById('mode-ortho').classList.toggle('active', mode === 'ortho');
   document.getElementById('mode-persp').classList.toggle('active', isPerspective);
-  // Show/hide the origin dot picker overlay
+  document.getElementById('mode-flat').classList.toggle('active', isFlat);
+
+  // Show/hide origin dot overlay
   const overlay = document.getElementById('persp-origin-overlay');
   if(overlay) overlay.style.display = isPerspective ? 'flex' : 'none';
+
+  // Show/hide view-position buttons
+  const posGroup = document.getElementById('view-group-positions');
+  if(posGroup) posGroup.style.display = isFlat ? 'none' : '';
+
+  if(isFlat && !wasFlat) {
+    _flatNeedsAutoFit = true;
+    // Save and disable snap & grid
+    _flatSavedSnap = snapEnabled;
+    _flatSavedGrid = showGrid;
+    if(snapEnabled){ snapEnabled=false; document.getElementById('btn-snap').classList.remove('active'); }
+    if(showGrid){ showGrid=false; document.getElementById('btn-grid').classList.remove('active'); }
+    // Hide snap & grid buttons
+    document.getElementById('btn-snap').style.display = 'none';
+    document.getElementById('btn-grid').style.display = 'none';
+	// Hide + Plane / + Cube buttons
+    document.querySelectorAll('#panel-left .panel-header .tb-btn').forEach(b => b.style.display = 'none');
+  } else if(!isFlat && wasFlat) {
+    // Restore snap & grid
+    snapEnabled = _flatSavedSnap;
+    showGrid = _flatSavedGrid;
+    document.getElementById('btn-snap').classList.toggle('active', snapEnabled);
+    document.getElementById('btn-grid').classList.toggle('active', showGrid);
+    // Show snap & grid buttons
+    document.getElementById('btn-snap').style.display = '';
+    document.getElementById('btn-grid').style.display = '';
+    // Show + Plane / + Cube buttons
+    document.querySelectorAll('#panel-left .panel-header .tb-btn').forEach(b => b.style.display = '');
+  }
   render();
 }
 
@@ -2345,16 +2585,35 @@ function setProjMode(mode){
 function updateLayers(){
   const el=document.getElementById('layer-list');
   if(!objects.length){el.innerHTML='<div style="padding:16px 12px;text-align:center;color:var(--text3);font-size:11px;">No objects yet</div>';return;}
-  el.innerHTML=[...objects].reverse().map(o=>`
-    <div class="layer-item ${selectedIds.includes(o.id)?'selected':''} ${!o.visible?'hidden':''}" onclick="selectObject(${o.id}, event.shiftKey||event.metaKey||event.ctrlKey)">
-      <div class="layer-thumb" style="background:${o.color};"></div><span class="layer-name">${o.name}</span><span class="layer-type">${o.type==='cube'?'Box':'Wall'}</span>
+  el.innerHTML=objects.map((o,i)=>`
+    <div class="layer-item ${selectedIds.includes(o.id)?'selected':''} ${!o.visible?'hidden':''}"
+      onclick="selectObject(${o.id}, event.shiftKey||event.metaKey||event.ctrlKey)"
+      onmouseenter="hoverLayer(${o.id},true)"
+      onmouseleave="hoverLayer(${o.id},false)">
+      <div class="layer-thumb" style="background:${o.color};"></div>
+      <span class="layer-name">${o.name}</span>
+      <span class="layer-type">${o.type==='cube'?'Box':'Wall'}</span>
       <div class="layer-vis-btn" onclick="event.stopPropagation();toggleVis(${o.id})">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><${o.visible?'':'path d="M1 1l10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>'}${o.visible?'<circle cx="6" cy="6" r="2" stroke="currentColor" stroke-width="1.1"/><path d="M1 6s1.8-3 5-3 5 3 5 3-1.8 3-5 3-5-3-5-3z" stroke="currentColor" stroke-width="1.1"/>':''}</svg>
       </div>
     </div>`).join('');
 }
 function toggleVis(id){const o=objects.find(o=>o.id===id);if(!o)return;o.visible=!o.visible;render();updateProps();}
-
+function hoverLayer(id, entering){
+  hoveredLayerId = entering ? id : null;
+  // Apply/remove highlight on the CSS 3D div directly without full re-render
+  document.querySelectorAll('[data-id]').forEach(el => {
+    if(parseInt(el.getAttribute('data-id')) === id){
+      if(entering){
+        el.style.outline = '2px solid rgba(13,153,255,0.6)';
+        el.style.zIndex = '10';
+      } else {
+        el.style.outline = selectedIds.includes(id) ? 'inset 0 0 0 1.5px #0d99ff' : '';
+        el.style.zIndex = '';
+      }
+    }
+  });
+}
 function updateStatusBar(){
   document.getElementById('sb-planes').textContent=`${objects.length} objects`;
   if(selectedIds.length === 1){
@@ -2394,18 +2653,23 @@ function setTool(t){
 function setUnit(u){unit=u;['cm','mm','in'].forEach(id=>{document.getElementById('unit-'+id).classList.toggle('active',id===u);});render();updateProps();}
 
 function setView(v){
-  const isoCamX = Math.asin(1/Math.sqrt(3)); // True isometric angle ~35.264deg
+  const isoCamX = Math.asin(1/Math.sqrt(3));
   if(v==='tl'){camZ=-Math.PI/4;camX=isoCamX;}
   else if(v==='tr'){camZ=Math.PI/4;camX=isoCamX;}
   else if(v==='front'){camZ=0;camX=0;}
   else if(v==='top'){camZ=0;camX=Math.PI/2-0.01;}
   
-  document.querySelectorAll('#view-group-2 .tb-btn').forEach(b=>b.classList.remove('active'));
-  if(document.getElementById('vb-'+v))document.getElementById('vb-'+v).classList.add('active');
+  // Toggle active state for the view buttons
+  ['tl', 'tr', 'front', 'top'].forEach(id => {
+    const btn = document.getElementById('vb-' + id);
+    if(btn) btn.classList.toggle('active', id === v);
+  });
+
   render();
 }
 
 function fitView(){
+  if(isFlat){ flatFitView(); render(); return; }
   if(!objects.length)return;
   let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
   objects.forEach(o=>{
@@ -2424,9 +2688,32 @@ function fitView(){
   document.getElementById('zoom-label').textContent=Math.round(zoomS*100)+'%';
   render();
 }
+function flatFitView(){
+  const planes = objects.filter(o => o.type === 'plane' && o.visible && o.axis !== 'floor');
+  if(!planes.length) return;
+  const vp = document.getElementById('viewport');
+  const vpW = vp.clientWidth, vpH = vp.clientHeight;
+  const PAD = 40;
 
+  let totalW = 0, maxH = 0;
+  planes.forEach(p => { totalW += p.w; maxH = Math.max(maxH, p.h); });
+
+  const scaleX = (vpW - PAD * 2) / (totalW || 1);
+  const scaleY = (vpH - PAD * 2) / (maxH || 1);
+  zoomS = flatZoomS = Math.min(5, Math.max(0.05, Math.min(scaleX, scaleY)));
+
+  // Center the strip: strip left edge in screen = vpW/2 + panX
+  // We want strip center at vpW/2, so: vpW/2 + panX + (totalW/2)*zoomS = vpW/2
+  panX = flatPanX = -(totalW / 2) * zoomS;
+  // Strip top = vpH/2 + panY - maxH*zoomS, bottom = vpH/2 + panY
+  // We want vertical center at vpH/2: vpH/2 + panY - (maxH/2)*zoomS = vpH/2
+  panY = flatPanY = (maxH / 2) * zoomS;
+
+  document.getElementById('zoom-label').textContent = Math.round(zoomS * 100) + '%';
+}
 function toggleSnap(){snapEnabled=!snapEnabled;document.getElementById('btn-snap').classList.toggle('active',snapEnabled);updateStatusBar();}
 function toggleGrid(){showGrid=!showGrid;document.getElementById('btn-grid').classList.toggle('active',showGrid);render();}
+function toggleNames(){showNames=!showNames;document.getElementById('btn-names').classList.toggle('active',showNames);render();}
 
 // ── CONTEXT MENU ──────────────────────────────────────────────────────
 function showCtxMenu(e){
@@ -2640,7 +2927,12 @@ function saveFile(){
 
 function exportFormat(type){
   closeExportMenu();
-  
+
+  if(isFlat){
+    exportFlatFormat(type);
+    return;
+  }
+
   if(type === 'svg') {
     const s=new XMLSerializer();const src='<?xml version="1.0"?>\n'+s.serializeToString(generateOffscreenSVG());
     const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([src],{type:'image/svg+xml'}));a.download='booth-export.svg';a.click();
@@ -2667,6 +2959,84 @@ function exportFormat(type){
     URL.revokeObjectURL(url);
   };
   img.src=url;
+}
+
+async function exportFlatFormat(type){
+  const planes = objects.filter(o => o.type === 'plane' && o.visible && o.axis !== 'floor');
+  if(!planes.length) return;
+
+  let totalW = 0, maxH = 0;
+  planes.forEach(p => { totalW += p.w; maxH = Math.max(maxH, p.h); });
+
+  // Build SVG at native world-unit resolution (1 unit = 1px)
+  let svgParts = [];
+  svgParts.push(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${totalW}" height="${maxH}">`);
+  svgParts.push(`<rect width="${totalW}" height="${maxH}" fill="#e8e8e8"/>`);
+
+  let cursorX = 0;
+  // We need to load all images as base64 before serializing
+  const imagePromises = planes.map(p => {
+    if(!p.image) return Promise.resolve(null);
+    // image is already a dataUrl (webp base64) stored on the object
+    return Promise.resolve(p.image);
+  });
+  const imageData = await Promise.all(imagePromises);
+
+  planes.forEach((p, i) => {
+    const x = cursorX;
+    const y = maxH - p.h; // align bottoms
+    svgParts.push(`<g>`);
+    if(p.image && imageData[i]){
+      const rx = p.imgOpts?.flipH ? 1 : -1;
+      const ry = p.imgOpts?.flipV ? -1 : 1;
+      const rot = p.imgOpts?.rot || 0;
+      const cx = x + p.w / 2, cy = y + p.h / 2;
+      svgParts.push(`<image href="${imageData[i]}" x="${x}" y="${y}" width="${p.w}" height="${p.h}" preserveAspectRatio="${p.imgOpts?.fit === 'fit' ? 'xMidYMid meet' : 'none'}" transform="rotate(${rot},${cx},${cy}) scale(1,1)" style="transform-origin:${cx}px ${cy}px; transform:rotate(${rot}deg) scale(${rx},${ry})"/>`);
+      // SVG doesn't support CSS scale well — use a nested group with transform instead
+      svgParts.pop();
+      svgParts.push(`<g transform="translate(${cx},${cy}) rotate(${rot}) scale(${rx},${ry}) translate(${-p.w/2},${-p.h/2})">`);
+      svgParts.push(`<image href="${imageData[i]}" x="0" y="0" width="${p.w}" height="${p.h}" preserveAspectRatio="${p.imgOpts?.fit === 'fit' ? 'xMidYMid meet' : 'none'}"/>`);
+      svgParts.push(`</g>`);
+    } else {
+      svgParts.push(`<rect x="${x}" y="${y}" width="${p.w}" height="${p.h}" fill="${p.color}" opacity="${p.opacity}"/>`);
+    }
+    svgParts.push(`<rect x="${x}" y="${y}" width="${p.w}" height="${p.h}" fill="none" stroke="rgba(0,0,0,0.12)" stroke-width="1"/>`);
+    svgParts.push(`</g>`);
+    cursorX += p.w;
+  });
+
+  svgParts.push(`</svg>`);
+  const svgStr = svgParts.join('\n');
+
+  if(type === 'svg'){
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([svgStr], {type:'image/svg+xml'}));
+    a.download = 'booth-flat-export.svg';
+    a.click();
+    return;
+  }
+
+  // Rasterize via canvas
+  const canvas = document.createElement('canvas');
+  canvas.width = totalW;
+  canvas.height = maxH;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#e8e8e8';
+  ctx.fillRect(0, 0, totalW, maxH);
+
+  const blob = new Blob([svgStr], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    const mimes = { png:'image/png', jpg:'image/jpeg', webp:'image/webp', gif:'image/gif' };
+    a.href = canvas.toDataURL(mimes[type] || 'image/png', 0.9);
+    a.download = `booth-flat-capture.${type}`;
+    a.click();
+  };
+  img.src = url;
 }
 
 function newScene(){
@@ -2756,26 +3126,26 @@ if(window.__BC_STATE__){
 // ── INIT DEMO ─────────────────────────────────────────────────────────
 function initDemo(){
   objects=[
-    // 1. Floor (793.6cm wide x 500cm deep)
-    mkPlane({name:'Floor', x:0, y:0, z:0, w:793.6, h:500, axis:'floor', color:'#dcdcdc'}),
+    // 1. Floor (800cm wide x 500cm deep)
+    mkPlane({name:'Floor', x:0, y:0, z:0, w:800, h:500, axis:'floor', color:'#dcdcdc'}),
     
     // 2. Side Walls (edges of the booth)
-    mkPlane({name:'Left Wall', x:0, y:0, z:0, w:500, h:297.6, rotZ:90, color:'#efefef'}),
-    mkPlane({name:'Right Wall', x:793.6, y:0, z:0, w:500, h:297.6, rotZ:90, color:'#efefef'}),
+    mkPlane({name:'Left Wall', x:0, y:500, z:0, w:500, h:300, rotZ:-90, color:'#efefef'}),
+    mkPlane({name:'Right Wall', x:800, y:0, z:0, w:500, h:300, rotZ:90, color:'#efefef'}),
     
     // 3. Back Wall panels (G1 and G3) - placed at the back (y=0)
-    mkPlane({name:'G1 (Back-Left)', x:0, y:0, z:0, w:297.6, h:297.6, rotZ:0, color:'#e8e8e8'}),
-    mkPlane({name:'G3 (Back-Right)', x:496, y:0, z:0, w:297.6, h:297.6, rotZ:0, color:'#e8e8e8'}),
+    mkPlane({name:'G1 (Back-Left)', x:0, y:0, z:0, w:300, h:300, rotZ:0, color:'#e8e8e8'}),
+    mkPlane({name:'G3 (Back-Right)', x:500, y:0, z:0, w:300, h:300, rotZ:0, color:'#e8e8e8'}),
     
     // 4. Center Store Room - starts at y=0, extends forward to y=100
-    mkPlane({name:'Store Left Wall', x:297.6, y:0, z:0, w:100, h:396.8, rotZ:90, color:'#e8e8e8'}),
-    mkPlane({name:'Door', x:496.1, y:5, z:0, w:90, h:210, rotZ:90, color:'#444444'}),
-    mkPlane({name:'Store Right Wall', x:496, y:0, z:0, w:100, h:396.8, rotZ:90, color:'#e8e8e8'}),
-    mkPlane({name:'G2 (Store Front)', x:297.6, y:100, z:0, w:198.4, h:396.8, rotZ:0, color:'#e0e0e0'}),
+    mkPlane({name:'Store Left Wall', x:300, y:0, z:0, w:100, h:400, rotZ:90, color:'#e8e8e8'}),
+    mkPlane({name:'Door', x:501, y:95, z:0, w:90, h:210, rotZ:-90, color:'#444444'}),
+    mkPlane({name:'Store Right Wall', x:500, y:100, z:0, w:100, h:400, rotZ:-90, color:'#e8e8e8'}),
+    mkPlane({name:'G2 (Store Front)', x:300, y:100, z:0, w:200, h:400, rotZ:0, color:'#e0e0e0'}),
     
     // 5. Reception Desk & Header (Front Left)
     mkCube({name:'Counter', x:10, y:410, z:0, w:80, d:80, h:100, color:'#e4e4e4'}),
-    mkPlane({name:'Header', x:360, y:500, z:356.8, w:80, h:40, rotZ:0, color:'#0d99ff'})
+    mkPlane({name:'Header', x:360, y:500, z:360, w:80, h:40, rotZ:0, color:'#0d99ff'})
   ];
 }
 
@@ -2789,7 +3159,7 @@ const TPL_COLORS = ['#1bc47d','#38AFD9','#e05a3a','#8b8fa8','#1a2e44','#0d99ff',
 // SVG floor-plan thumbnail. Coordinate space: 156×100. Top=back wall, bottom=front.
 // BG = booth floor (tan). Segs are colored wall strips with number badges.
 function makeTplSvg(segs, svgW=156, svgH=100){
-  const BG='#c9b49a';
+  const BG='#EFF0F2';
   let out=`<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">`;
   out+=`<rect x="0" y="0" width="${svgW}" height="${svgH}" fill="${BG}" rx="2"/>`;
   segs.forEach(s=>{
@@ -2872,59 +3242,59 @@ const TEMPLATES = [
   // ════════════ 1 WALL + STORAGE ════════════
   { group:'1wall-s', label:'Storage left',
     svgSegs:[
-      {x:0,    y:35, w:T,      h:H-35,  c:TPL_COLORS[0]},       // 1 (Green)
-      {x:0,    y:35, w:45,     h:T,     c:TPL_COLORS[1]},       // 2 (Cyan)
-      {x:45,   y:0,  w:T,      h:35+T,  c:TPL_COLORS[2]},       // 3 (Red)
-      {x:45,   y:0,  w:W-45,   h:T,     c:TPL_COLORS[3]},       // 4 (Gray)
+      {x:0,      y:0,      w:T,    h:35+T,  c:TPL_COLORS[0]},  // 1 Green  left outer vertical
+      {x:0,      y:35,     w:45,   h:T,     c:TPL_COLORS[1]},  // 2 Cyan   store front horizontal
+      {x:45,     y:0,      w:T,    h:35+T,  c:TPL_COLORS[2]},  // 3 Red    store inner vertical
+      {x:45,     y:0,      w:W-45, h:T,  c:TPL_COLORS[3]},  // 4 Gray   back wall right
     ],
     layers:[
-      {name:'Left Side Wall',  color:TPL_COLORS[0], userW:215,   userH:R_H, userUnit:'cm', ax:'z', rx:90, px:0,     py:80,   pz:0},
-      {name:'Store Front',     color:TPL_COLORS[1], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,     py:80,   pz:0},
-      {name:'Store Side Wall', color:TPL_COLORS[2], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:80,    py:0,    pz:0},
-      {name:'Back Wall',       color:TPL_COLORS[3], userW:120,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:80,    py:0,    pz:0},
+      {name:'Store Left Wall',  color:TPL_COLORS[0], userW:80,  userH:R_H, userUnit:'cm', ax:'z', rx:90, px:0,   py:0,  pz:0},
+      {name:'Store Front',      color:TPL_COLORS[1], userW:80,  userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,   py:80, pz:0},
+      {name:'Store Inner Wall', color:TPL_COLORS[2], userW:80,  userH:R_H, userUnit:'cm', ax:'z', rx:90, px:80,  py:0,  pz:0},
+      {name:'Back Wall',        color:TPL_COLORS[3], userW:120, userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:80,  py:0,  pz:0},
     ]},
 
   { group:'1wall-s', label:'Storage right',
     svgSegs:[
-      {x:0,    y:0,  w:W-45,   h:T,     c:TPL_COLORS[0]},       // 1 (Green)
-      {x:W-45-T, y:0, w:T,     h:35+T,  c:TPL_COLORS[1]},       // 2 (Cyan)
-      {x:W-45-T, y:35, w:45,   h:T,     c:TPL_COLORS[2]},       // 3 (Red)
-      {x:W-T,  y:35, w:T,      h:H-35,  c:TPL_COLORS[3]},       // 4 (Gray)
+      {x:0,       y:0,  w:W-45-T, h:T,    c:TPL_COLORS[0]},  // 1 Green  back wall top (left portion)
+      {x:W-45-T,  y:0,  w:T,      h:35+T, c:TPL_COLORS[1]},  // 2 Cyan   store inner vertical
+      {x:W-45-T,  y:35, w:45,     h:T,    c:TPL_COLORS[2]},  // 3 Red    store front horizontal (goes right)
+      {x:W-T,     y:0,  w:T,      h:35+T, c:TPL_COLORS[3]},  // 4 Gray   store right wall vertical
     ],
     layers:[
-      {name:'Back Wall',       color:TPL_COLORS[0], userW:120,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,     py:0,    pz:0},
-      {name:'Store Side Wall', color:TPL_COLORS[1], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:120,   py:0,    pz:0},
-      {name:'Store Front',     color:TPL_COLORS[2], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:120,   py:80,   pz:0},
-      {name:'Right Side Wall', color:TPL_COLORS[3], userW:215,   userH:R_H, userUnit:'cm', ax:'z', rx:90, px:R_W,   py:80,   pz:0},
+      {name:'Back Wall',        color:TPL_COLORS[0], userW:120, userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,   py:0,  pz:0},
+      {name:'Store Inner Wall', color:TPL_COLORS[1], userW:80,  userH:R_H, userUnit:'cm', ax:'z', rx:90, px:120, py:0,  pz:0},
+      {name:'Store Front',      color:TPL_COLORS[2], userW:80,  userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:120, py:80, pz:0},
+      {name:'Store Right Wall', color:TPL_COLORS[3], userW:80,  userH:R_H, userUnit:'cm', ax:'z', rx:90, px:200, py:80, pz:0},
     ]},
 
   // ════════════ 2 WALLS + STORAGE ════════════
   { group:'2wall-s', label:'Left wall + storage',
     svgSegs:[
-      {x:0,    y:35, w:T,      h:H-35,  c:TPL_COLORS[0]},       // 1 (Green)
-      {x:0,    y:35, w:45,     h:T,     c:TPL_COLORS[1]},       // 2 (Cyan)
-      {x:45,   y:0,  w:T,      h:35+T,  c:TPL_COLORS[2]},       // 3 (Red)
-      {x:0,    y:0,  w:W,      h:T,     c:TPL_COLORS[3]},       // 4 (Gray)
+      {x:0,  y:35, w:T,     h:H-35,   c:TPL_COLORS[0]},   // 1 (Green) left wall full vertical
+      {x:0,  y:35, w:45,     h:T,     c:TPL_COLORS[1]},   // 2 (Cyan)  store front horizontal
+      {x:45, y:0,  w:T,      h:35+T,  c:TPL_COLORS[2]},   // 3 (Red)   store inner vertical
+      {x:45, y:0,  w:W-45,   h:T,     c:TPL_COLORS[3]},   // 4 (Gray)  back wall horizontal
     ],
     layers:[
-      {name:'Left Wall',       color:TPL_COLORS[0], userW:R_D,   userH:R_H, userUnit:'cm', ax:'z', rx:90, px:0,    py:0,    pz:0},
-      {name:'Store Front',     color:TPL_COLORS[1], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,    py:80,   pz:0},
-      {name:'Store Inner Wall',color:TPL_COLORS[2], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:80,   py:0,    pz:0},
-      {name:'Back Wall',       color:TPL_COLORS[3], userW:R_W,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,    py:0,    pz:0},
+      {name:'Left Wall',        color:TPL_COLORS[0], userW:R_D,   userH:R_H, userUnit:'cm', ax:'z', rx:90, px:0,    py:0,    pz:0},
+      {name:'Store Front',      color:TPL_COLORS[1], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,    py:80,   pz:0},
+      {name:'Store Inner Wall', color:TPL_COLORS[2], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:80,   py:0,    pz:0},
+      {name:'Back Wall',        color:TPL_COLORS[3], userW:R_W,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:80,   py:0,    pz:0},
     ]},
 
   { group:'2wall-s', label:'Back + storage + right wall',
     svgSegs:[
-      {x:0,    y:0,  w:W,      h:T,     c:TPL_COLORS[0]},       // 1 (Green)
-      {x:W-45-T, y:0, w:T,     h:35+T,  c:TPL_COLORS[1]},       // 2 (Cyan)
-      {x:W-45-T, y:35, w:45,   h:T,     c:TPL_COLORS[2]},       // 3 (Red)
-      {x:W-T,  y:35, w:T,      h:H-35,  c:TPL_COLORS[3]},       // 4 (Gray)
+      {x:0,      y:0,  w:W-45,  h:T,    c:TPL_COLORS[0]},   // 1 (Green) back wall horizontal
+      {x:W-45-T, y:0,  w:T,     h:35+T, c:TPL_COLORS[1]},   // 2 (Cyan)  store inner vertical
+      {x:W-45-T, y:35, w:45,    h:T,    c:TPL_COLORS[2]},   // 3 (Red)   store front horizontal
+      {x:W-T,    y:35,  w:T,     h:H-35,    c:TPL_COLORS[3]},   // 4 (Gray)  right wall full vertical
     ],
     layers:[
       {name:'Back Wall',        color:TPL_COLORS[0], userW:R_W,   userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:0,     py:0,    pz:0},
       {name:'Store Inner Wall', color:TPL_COLORS[1], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:90, px:120,   py:0,    pz:0},
       {name:'Store Front',      color:TPL_COLORS[2], userW:80,    userH:R_H, userUnit:'cm', ax:'z', rx:0,  px:120,   py:80,   pz:0},
-      {name:'Right Wall',       color:TPL_COLORS[3], userW:R_SPR, userH:R_H, userUnit:'cm', ax:'z', rx:90, px:R_W,   py:80,   pz:0},
+      {name:'Right Wall',       color:TPL_COLORS[3], userW:R_SPR, userH:R_H, userUnit:'cm', ax:'z', rx:90, px:R_W,   py:0,    pz:0},
     ]},
 
   // ════════════ OTHER (CENTERED STORAGE) ════════════
@@ -3016,7 +3386,7 @@ function openTplModal(){
     // Smaller thumbnails for the picker
     const svgHtml = makeTplSvgSized(t.svgSegs, 150, 97);
     card.innerHTML = svgHtml;
-    card.onclick = () => { closeTplModal(); openDetModal(i); };
+    card.onclick = () => { closeTplModal(); setTimeout(() => openDetModal(i), 0); };
     row.appendChild(card);
   });
   document.getElementById('tpl-overlay').classList.add('open');
@@ -3039,35 +3409,38 @@ function parseDimFromName(name){
 function openDetModal(tplIdx){
   detTplIndex = tplIdx;
   const tpl = TEMPLATES[tplIdx];
-  // Deep-copy layers
+  // Deep-copy layers and prevent undefined values
   detLayers = tpl.layers.map((l,i) => ({
     ...l,
-    userW: l.w, userH: l.h, userUnit:'cm',
-    userName: l.name,
+    userW: l.userW || l.w || '', 
+    userH: l.userH || l.h || '', 
+    userUnit: l.userUnit || 'cm',
+    userName: l.name || '',
     fileIdx: null   // index into detFiles
   }));
   detFiles = [];
   renderDetPreview();
-  renderDetFilelist();
   renderDetLayers();
   document.getElementById('det-title').textContent = `Configure: ${tpl.label}`;
+  _detJustOpened = true;
   document.getElementById('det-overlay').classList.add('open');
 }
-function closeDetModal(){ document.getElementById('det-overlay').classList.remove('open'); }
-document.getElementById('det-overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeDetModal(); });
 
-// ── Preview SVG ──────────────────────────────────────────────────
-function renderDetPreview(){
-  const tpl = TEMPLATES[detTplIndex];
-  const el = document.getElementById('det-preview');
-  el.innerHTML = makeTplSvg(tpl.svgSegs, 220, 140);
-}
+let _detJustOpened = false;
+function closeDetModal(){ document.getElementById('det-overlay').classList.remove('open'); }
+document.getElementById('det-overlay').addEventListener('click', e => {
+  if(_detJustOpened){ _detJustOpened = false; return; }
+  if(e.target===e.currentTarget) closeDetModal();
+});
 
 // ── Unified SVG renderer (scales base 156×100 coords to any output size) ──
 function makeTplSvgSized(segs, svgW, svgH){
+  const PAD = 10; // padding so edge badges don't clip
   const scaleX = svgW / W, scaleY = svgH / H;
-  const BG = '#c9b49a';
-  let out = `<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}">`;
+  const BG = '#EFF0F2';
+  const vbW = svgW + PAD * 2, vbH = svgH + PAD * 2;
+  // Use vbW and vbH as the SVG dimensions so the aspect ratio matches the viewBox perfectly
+  let out = `<svg viewBox="${-PAD} ${-PAD} ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" width="${vbW}" height="${vbH}">`;
   out += `<rect x="0" y="0" width="${svgW}" height="${svgH}" fill="${BG}" rx="2"/>`;
   segs.forEach(s => {
     const x = (s.x * scaleX).toFixed(1),  y = (s.y * scaleY).toFixed(1);
@@ -3086,13 +3459,68 @@ function makeTplSvgSized(segs, svgW, svgH){
   return out;
 }
 
+
 // makeTplSvg kept as alias for backward compat (used nowhere else, but safe)
 function makeTplSvg(segs, svgW=156, svgH=100){ return makeTplSvgSized(segs, svgW, svgH); }
 
 // ── Preview SVG (detail modal left panel) ───────────────────────
 function renderDetPreview(){
   const tpl = TEMPLATES[detTplIndex];
-  document.getElementById('det-preview').innerHTML = makeTplSvgSized(tpl.svgSegs, 220, 141);
+  const SVG_W = 660, SVG_H = 423;
+  const wrap = document.getElementById('det-preview-wrap');
+  wrap.innerHTML = makeTplSvgSized(tpl.svgSegs, SVG_W, SVG_H);
+  
+  // Calculate scale factors based on original constants (W=156, H=100)
+  const scaleX = SVG_W / W;
+  const scaleY = SVG_H / H;
+
+  // Use % positioning so overlays track the responsive SVG at any rendered size
+  tpl.svgSegs.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'det-seg-drop' + (detLayers[i]?.fileIdx != null ? ' has-file' : '');
+    div.id = `det-seg-${i}`;
+    const PAD = 10; // matches makeTplSvgSized PAD
+    const totalW = SVG_W + PAD * 2, totalH = SVG_H + PAD * 2;
+    // SVG viewBox is (-PAD,-PAD,totalW,totalH), rendered at SVG_W×SVG_H
+    
+    // Scale the unscaled coordinates first
+    const sX = s.x * scaleX;
+    const sY = s.y * scaleY;
+    const sW = s.w * scaleX;
+    const sH = s.h * scaleY;
+    
+    // So pixel coords: px = (svgX + PAD) / totalW * 100%
+    const pLeft   = ((sX + PAD) / totalW * 100).toFixed(3);
+    const pTop    = ((sY + PAD) / totalH * 100).toFixed(3);
+    const pWidth  = (sW / totalW * 100).toFixed(3);
+    const pHeight = (sH / totalH * 100).toFixed(3);
+    
+    div.style.left   = pLeft + '%';
+    div.style.top    = pTop + '%';
+    div.style.width  = pWidth + '%';
+    div.style.height = pHeight + '%';
+    div.title = `Drop image onto wall ${i+1}`;
+    div.addEventListener('dragover',  e => { e.preventDefault(); div.classList.add('drag-over'); });
+    div.addEventListener('dragleave', e => { div.classList.remove('drag-over'); });
+    div.addEventListener('drop', e => {
+      e.preventDefault();
+      div.classList.remove('drag-over');
+      // External file dropped directly onto preview segment
+      const file = e.dataTransfer.files[0];
+      if(file){ addDetFile(file, i); return; }
+      // Dragged from file list
+      if(detDragFileIdx !== null){
+        const f = detFiles[detDragFileIdx];
+        if(f){ f.assignedLayer = i; }
+        detLayers[i].fileIdx = detDragFileIdx;
+        if(f?.detectedW){ detLayers[i].userW=f.detectedW; detLayers[i].userH=f.detectedH; detLayers[i].userUnit=f.detectedUnit; }
+        detDragFileIdx = null;
+        renderDetPreview();
+        renderDetLayers();
+      }
+    });
+    wrap.appendChild(div);
+  });
 }
 
 // ── File list ────────────────────────────────────────────────────
@@ -3131,49 +3559,58 @@ function detFileDragStart(e, idx){
 }
 
 // ── Layer cards ──────────────────────────────────────────────────
+function cleanFileName(name){
+  return name
+    .replace(/\.[^/.]+$/, '')                          // remove extension
+    .replace(/_?PROOF\d*/gi, '')                       // remove _PROOF1 etc
+    .replace(/_?(DIGITAL|PRINT|FINAL|APPROVED|DRAFT)/gi, '')
+    .replace(/_?V\d+/gi, '').replace(/_?REV\d*/gi, '')
+    .replace(/[_-]+$/, '').trim();
+}
+
 function renderDetLayers(){
   const el = document.getElementById('det-layers-list');
   el.innerHTML = detLayers.map((l,i)=>{
-    const f = l.fileIdx !== null && l.fileIdx !== undefined ? detFiles[l.fileIdx] : null;
-    const fileLabel = f ? f.name : 'Drop file here';
+    const f = l.fileIdx != null ? detFiles[l.fileIdx] : null;
     const hasFile = !!f;
-    return `<div class="det-layer-card">
+    const dispName = hasFile ? cleanFileName(f.name) : '';
+    const color = TPL_COLORS[i];
+    return `<div class="det-layer-card" id="det-fd-${i}"
+      ondragover="detLayerDragOver(event,${i})"
+      ondragleave="detLayerDragLeave(event,${i})"
+      ondrop="detLayerFileDrop(event,${i})"
+      style="border-left:5px solid ${color};">
       <div class="det-layer-card-head">
-        <div class="det-layer-num" style="background:${TPL_COLORS[i]}">${i+1}</div>
-        <input class="det-layer-name-input" value="${l.userName}"
+        <div class="det-layer-num" style="background:${color}">${i+1}</div>
+        <input class="det-layer-name-input" value="${hasFile ? dispName : (l.userName || '')}"
           oninput="detLayers[${i}].userName=this.value" placeholder="Layer name">
+        ${hasFile ? `<span style="font-size:11px;color:var(--text3);cursor:pointer;flex-shrink:0;padding:0 2px;" onclick="event.stopPropagation();detLayerClearFile(${i})" title="Clear">×</span>` : ''}
       </div>
       <div class="det-layer-body">
-        <input class="det-dim-input" value="${l.userW}" placeholder="W"
-          oninput="detLayers[${i}].userW=parseFloat(this.value)||detLayers[${i}].userW"
-          title="Width">
+        <input class="det-dim-input" value="${l.userW || ''}" placeholder="W"
+          oninput="detLayers[${i}].userW=parseFloat(this.value)||detLayers[${i}].userW" title="Width">
         <span class="det-dim-sep">×</span>
-        <input class="det-dim-input" value="${l.userH}" placeholder="H"
-          oninput="detLayers[${i}].userH=parseFloat(this.value)||detLayers[${i}].userH"
-          title="Height">
+        <input class="det-dim-input" value="${l.userH || ''}" placeholder="H"
+          oninput="detLayers[${i}].userH=parseFloat(this.value)||detLayers[${i}].userH" title="Height">
         <select class="det-unit-sel" onchange="detLayers[${i}].userUnit=this.value">
           <option value="cm" ${l.userUnit==='cm'?'selected':''}>cm</option>
           <option value="mm" ${l.userUnit==='mm'?'selected':''}>mm</option>
           <option value="in" ${l.userUnit==='in'?'selected':''}>in</option>
         </select>
-        <div class="det-file-drop ${hasFile?'has-file':''}" id="det-fd-${i}"
-          ondragover="detLayerDragOver(event,${i})"
-          ondragleave="detLayerDragLeave(event,${i})"
-          ondrop="detLayerFileDrop(event,${i})">
-          <input type="file" accept="image/*,application/pdf"
+        <label style="flex:1;min-width:0;cursor:pointer;font-size:10px;color:${hasFile?'var(--green)':'var(--text3)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          <input type="file" accept="image/*,application/pdf" style="display:none"
             onchange="detLayerFileInput(this,${i})">
-          ${hasFile
-            ? `<span style="color:var(--green);margin-right:4px;">✓</span>${fileLabel}`
-            : `<span style="opacity:.5;">${fileLabel}</span>`}
-        </div>
-        ${hasFile ? `<span style="font-size:11px;color:var(--text3);cursor:pointer;" onclick="detLayerClearFile(${i})" title="Clear">×</span>` : ''}
+          ${hasFile ? `✓ ${dispName}` : '↓ Drop or click'}
+        </label>
       </div>
     </div>`;
   }).join('');
 }
 
+
 function detLayerDragOver(e,i){
   e.preventDefault();
+  e.stopPropagation();
   document.getElementById(`det-fd-${i}`)?.classList.add('drag-over');
 }
 function detLayerDragLeave(e,i){
@@ -3212,7 +3649,7 @@ function detLayerClearFile(i){
   const prev = detLayers[i].fileIdx;
   if(prev !== null && detFiles[prev]) detFiles[prev].assignedLayer = null;
   detLayers[i].fileIdx = null;
-  renderDetFilelist();
+  renderDetPreview();
   renderDetLayers();
 }
 
@@ -3227,7 +3664,7 @@ function addDetFile(file, assignTo=null){
       detLayers[assignTo].fileIdx = existing;
       const dims = parseDimFromName(file.name);
       if(dims){ detLayers[assignTo].userW=dims.w; detLayers[assignTo].userH=dims.h; detLayers[assignTo].userUnit=dims.unit; }
-      renderDetFilelist(); renderDetLayers();
+      renderDetPreview(); renderDetLayers();
     }
     return;
   }
@@ -3262,7 +3699,7 @@ function addDetFile(file, assignTo=null){
         if(dims){ detLayers[match].userW=dims.w; detLayers[match].userH=dims.h; detLayers[match].userUnit=dims.unit; }
       }
     }
-    renderDetFilelist();
+    renderDetPreview();
     renderDetLayers();
   };
   reader.readAsDataURL(file);
@@ -3287,39 +3724,197 @@ function toLocalCm(val, unit){
 }
 
 // ── Apply template to scene ──────────────────────────────────────
-async function applyDetTemplate(){
-  if(objects.length && !confirm('Replace current scene with template? Unsaved changes will be lost.')) return;
+async function applyDetTemplate() {
+  if (objects.length && !confirm('Replace current scene with template? Unsaved changes will be lost.')) return;
+
   saveState();
-  objects = []; comments = []; selectedIds = [];
+  objects = [];
+  comments = [];
+  selectedIds = [];
 
-  // Add floor
-  objects.push(mkPlane({name:'Floor', x:0, y:0, z:0, w:793.6, h:500, axis:'floor', color:'#dcdcdc'}));
+  const tpl = TEMPLATES[detTplIndex];
+  const layers = detLayers;
 
-  for(const [i, layer] of detLayers.entries()){
-    const wCm = toLocalCm(layer.userW, layer.userUnit);
-    const hCm = toLocalCm(layer.userH, layer.userUnit);
+  // Helper: get dimension in cm
+  const W = (idx) => toLocalCm(layers[idx].userW, layers[idx].userUnit);
+  const H = (idx) => toLocalCm(layers[idx].userH, layers[idx].userUnit);
+
+  // boothWalls: {idx, x, y, r}
+  // rotZ:  0 = horizontal wall (back/front), runs along X, placed at y
+  // rotZ: 90 = vertical wall   (side),       runs along Y, placed at x
+  let boothWalls = [];
+
+  const lbl = tpl.label;
+
+ // ── 1 WALL ──────────────────────────────────────────────────────
+  if (lbl === 'Back wall only') {
+    boothWalls.push({ idx:0, x:0, y:0, r:0, flipH:true }); // Back Wall flip
+  }
+
+  // ── 2 WALLS ─────────────────────────────────────────────────────
+  else if (lbl === 'Left + Back') {
+    boothWalls.push({ idx:0, x:0,    y:0, r:90             }); // Left
+    boothWalls.push({ idx:1, x:0,    y:0, r:0,  flipH:true }); // Back flip
+  }
+
+  else if (lbl === 'Back + Right') {
+    boothWalls.push({ idx:0, x:0,    y:0, r:0,  flipH:true }); // Back flip
+    boothWalls.push({ idx:1, x:W(0), y:0, r:90             }); // Right
+  }
+
+  // ── 3 WALLS ─────────────────────────────────────────────────────
+  else if (lbl === 'Left + Back + Right') {
+    boothWalls.push({ idx:0, x:0,    y:0, r:90             }); // Left
+    boothWalls.push({ idx:1, x:0,    y:0, r:0,  flipH:true }); // Back flip
+    boothWalls.push({ idx:2, x:W(1), y:0, r:90             }); // Right
+  }
+
+  // ── 1 WALL + STORAGE ─────────────────────────────────────────────
+  // Storage left: remove old wall 1, renumber 2>1, 3>2, 4>3, Back Wall flip
+  else if (lbl === 'Storage left') {
+    // 1.svg: vertical down, horizontal right, vertical up, horizontal right
+    const storeDepth = W(1); // StoreFront width = store depth
+    const storeWidth = W(0); // StoreLeftWall width = store box width
+    boothWalls.push({ idx:0, x:0,          y:0,          r:90            }); // 1: Store Left Wall  (vertical)
+    boothWalls.push({ idx:1, x:0,          y:storeDepth, r:0             }); // 2: Store Front      (horizontal)
+    boothWalls.push({ idx:2, x:storeWidth, y:0,          r:90            }); // 3: Store Inner Wall (vertical)
+    boothWalls.push({ idx:3, x:storeWidth, y:0,          r:0, flipH:true }); // 4: Back Wall        (horizontal, flip)
+  }
+
+  else if (lbl === 'Storage right') {
+    // Shape: -|_|  (back wall left, storage box bottom-right)
+    // 1 (Green):  Back Wall       — horizontal at y=0, x=0
+    // 2 (Cyan):   Store Inner Wall — vertical at x=W(0), from y=0 down
+    // 3 (Red):    Store Front      — horizontal at y=W(1), from x=W(0) rightward
+    // 4 (Gray):   Store Right Wall — vertical at x=W(0)+W(2), from y=0 down
+    const backW      = W(0);
+    const storeDepth = W(1);
+    const storeFrontW = W(2);
+    boothWalls.push({ idx:0, x:0,                    y:0,          r:0,  flipH:true }); // 1: Back Wall
+    boothWalls.push({ idx:1, x:backW,                 y:0,          r:90            }); // 2: Store Inner Wall
+    boothWalls.push({ idx:2, x:backW,                 y:storeDepth, r:0,  flipH:true }); // 3: Store Front
+    boothWalls.push({ idx:3, x:backW + storeFrontW,   y:0,          r:90            }); // 4: Store Right Wall
+  }
+
+  // ── 2 WALLS + STORAGE ────────────────────────────────────────────
+  // Left wall + storage: same position as Storage left (with added left wall)
+  else if (lbl === 'Left wall + storage') {
+    // 4 walls: Left Wall (idx0), Store Front (idx1), Store Inner Wall (idx2), Back Wall (idx3)
+    // Wall 1 (green):  Left Wall full vertical at x=0
+    // Wall 2 (cyan):   Store Front horizontal at y=storeDepth, from x=0
+    // Wall 3 (red):    Store Inner Wall vertical at x=W(2)
+    // Wall 4 (gray):   Back Wall horizontal at y=0, from x=W(2)
+    const storeDepth = W(1); // StoreFront width = how deep it protrudes
+    const storeWidth = W(2); // StoreInnerWall x-position
+    boothWalls.push({ idx:0, x:0,          y:storeWidth, r:90             }); // 1: Left Wall
+    boothWalls.push({ idx:1, x:0,          y:storeWidth, r:0              }); // 2: Store Front
+    boothWalls.push({ idx:2, x:storeDepth, y:0,          r:90             }); // 3: Store Inner Wall
+    boothWalls.push({ idx:3, x:storeDepth, y:0,          r:0,  flipH:true }); // 4: Back Wall flip
+  }
+
+  // Back + storage + right wall: same position as Storage right (with added right wall)
+  else if (lbl === 'Back + storage + right wall') {
+    // 4 walls: Back Wall (idx0), Store Inner Wall (idx1), Store Front (idx2), Right Wall (idx3)
+    // Wall 1 (green):  Back Wall horizontal at y=0
+    // Wall 2 (cyan):   Store Inner Wall vertical at x=W(0)
+    // Wall 3 (red):    Store Front horizontal at y=storeDepth, from x=W(0)
+    // Wall 4 (gray):   Right Wall full vertical at x=W(0)+W(2)
+    const backW       = W(0);
+    const storeDepth  = W(1); // StoreInnerWall width = depth
+    const storeFrontW = W(2);
+    boothWalls.push({ idx:0, x:0,                   y:0,            r:0,  flipH:true });  // 1: Back Wall flip
+    boothWalls.push({ idx:1, x:backW,               y:0,            r:90             });  // 2: Store Inner Wall
+    boothWalls.push({ idx:2, x:backW,               y:storeDepth,   r:0,  flipH:true });  // 3: Store Front flip
+    boothWalls.push({ idx:3, x:backW + storeFrontW, y:storeDepth,  r:90             });  // 4: Right Wall
+  }
+
+  // ── OTHER: CENTERED STORAGE ───────────────────────────────────────
+  else if (tpl.group === 'other') {
+    let i = 0;
+
+    const hasLeftWall  = layers[0].name.toLowerCase().includes('left wall') ||
+                         layers[0].userName.toLowerCase().includes('left wall');
+    const hasRightWall = layers[layers.length - 1].name.toLowerCase().includes('right wall') ||
+                         layers[layers.length - 1].userName.toLowerCase().includes('right wall');
+
+    if (hasLeftWall) {
+      boothWalls.push({ idx:i, x:0, y:0, r:90 }); // Left Wall — no flip
+      i++;
+    }
+
+    const iBackL = i;
+    const iSideL = i + 1;
+    const iFront = i + 2;
+    const iSideR = i + 3;
+    const iBackR = i + 4;
+
+    const backLW         = W(iBackL);
+    const storeSideDepth = W(iSideL);
+    const frontW         = W(iFront);
+
+    // Centered storage only:        Back Left flip, Store Left Wall flip, Store Front flip, Store Right Wall no-flip, Back Right flip
+    // Left wall + center store:     same (left wall no-flip, rest same as above)
+    // Full wrap + center store:     same + Right Wall flip
+    boothWalls.push({ idx:iBackL, x:0,               y:0,               r:0,  flipH:true }); // Back Left flip
+    boothWalls.push({ idx:iSideL, x:backLW,           y:0,               r:90, flipH:true }); // Store Left Wall flip
+    boothWalls.push({ idx:iFront, x:backLW,           y:storeSideDepth,  r:0,  flipH:true }); // Store Front flip
+    boothWalls.push({ idx:iSideR, x:backLW + frontW,  y:0,               r:90             }); // Store Right Wall no-flip
+    boothWalls.push({ idx:iBackR, x:backLW + frontW,  y:0,               r:0,  flipH:true }); // Back Right flip
+
+    if (hasRightWall) {
+      const backRW = W(iBackR);
+      boothWalls.push({ idx:layers.length - 1, x:backLW + frontW + backRW, y:0, r:90, flipH:true }); // Right Wall flip
+    }
+  }
+
+  // ── GENERATE 3D PLANES ──────────────────────────────────────────
+  for (const config of boothWalls) {
+    const layer = layers[config.idx];
+    const w = toLocalCm(layer.userW, layer.userUnit);
+    const h = toLocalCm(layer.userH, layer.userUnit);
+
     const o = mkPlane({
       name: layer.userName,
-      x: layer.px, y: layer.py, z: layer.pz,
-      w: wCm, h: hCm,
-      axis: layer.ax === 'floor' ? 'floor' : 'z',
-      rotZ: layer.rx,
+      x: config.x, y: config.y, z: 0,
+      w: w, h: h,
+      axis: 'z',
+      rotZ: config.r,
       color: layer.color
     });
 
-    // Apply image if assigned
-    if(layer.fileIdx !== null && detFiles[layer.fileIdx]){
-      const f = detFiles[layer.fileIdx];
-      await processAndSetImage(f.file, o, ()=>{}, null);
+    // Apply flip correction: defaultRx is -1 in drawCssPlane,
+    // so walls that face correctly need flipH:true to cancel it out.
+    if (!o.imgOpts) o.imgOpts = {};
+    o.imgOpts.flipH = config.flipH === true;
+
+    if (layer.fileIdx !== null && detFiles[layer.fileIdx]) {
+      await processAndSetImage(detFiles[layer.fileIdx].file, o, () => {}, null);
     }
     objects.push(o);
   }
 
+  // ── AUTO-GENERATE FLOOR ─────────────────────────────────────────
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  objects.forEach(obj => {
+    planeCorners(obj).forEach(p => {
+      minX = Math.min(minX, p[0]); maxX = Math.max(maxX, p[0]);
+      minY = Math.min(minY, p[1]); maxY = Math.max(maxY, p[1]);
+    });
+  });
+  if (minX === Infinity) { minX = 0; maxX = 200; minY = 0; maxY = 250; }
+
+  const floor = mkPlane({
+    name: 'Floor',
+    x: minX - 50, y: minY - 50, z: -0.1,
+    w: (maxX - minX) + 100, h: (maxY - minY) + 100,
+    axis: 'floor', color: '#e0e0e0'
+  });
+  objects.unshift(floor);
+
+  // ── REFRESH VIEW ────────────────────────────────────────────────
   closeDetModal();
-  fitView();
   render();
-  updateProps();
-  updateLayers();
+  setTimeout(() => { fitView(); render(); updateProps(); }, 50);
 }
 
 if(!objects.length)initDemo();
