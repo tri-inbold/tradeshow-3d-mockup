@@ -3003,38 +3003,159 @@ async function exportFormat(type) {
   }
 
   // Handle Raster (PNG, JPG, WEBP) and PDF
-  const canvas = document.createElement('canvas');
-  const vp = document.getElementById('viewport');
-  canvas.width = vp.clientWidth;
-  canvas.height = vp.clientHeight;
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#ffffff'; // PDF looks better with white background
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Build a tight-fit SVG at native world-unit resolution (ignores viewport zoom/pan)
+  const PAD = 60;
+  const EXPORT_SCALE = 4; // 4x = ~384 DPI — crisp at any zoom in PDF viewer
 
-  const img = new Image();
-  const svgStr = new XMLSerializer().serializeToString(generateOffscreenSVG());
+  // 1. Compute bounding box of all visible objects in projected screen coords
+  //    using a neutral projection (zoom=1, pan=0) so we get true world size
+  const savedZoom = zoomS, savedPanX = panX, savedPanY = panY;
+  zoomS = 1; panX = 0; panY = 0;
+  const visObjs = objects.filter(o => o.visible);
+  let bMinX = Infinity, bMaxX = -Infinity, bMinY = Infinity, bMaxY = -Infinity;
+  visObjs.forEach(o => {
+    const corners = o.type === 'plane' ? planeCorners(o) : Object.values(cubeCorners(o)).flat();
+    corners.forEach(([cx, cy, cz]) => {
+      const p = proj(cx, cy, cz);
+      if (p.sx < bMinX) bMinX = p.sx; if (p.sx > bMaxX) bMaxX = p.sx;
+      if (p.sy < bMinY) bMinY = p.sy; if (p.sy > bMaxY) bMaxY = p.sy;
+    });
+  });
+  zoomS = savedZoom; panX = savedPanX; panY = savedPanY;
+
+  if (bMinX === Infinity) { bMinX = -200; bMaxX = 200; bMinY = -200; bMaxY = 200; }
+  const contentW = (bMaxX - bMinX) + PAD * 2;
+  const contentH = (bMaxY - bMinY) + PAD * 2;
+
+  // 2. Build SVG that places content exactly in frame (zoom=1, pan centers the bbox)
+  const savedZ2 = zoomS, savedPX2 = panX, savedPY2 = panY;
+  zoomS = 1;
+  panX = -(bMinX + bMaxX) / 2 + contentW / 2 - contentW / 2 + PAD - bMinX;
+  panY = -(bMinY + bMaxY) / 2 + contentH / 2 - contentH / 2 + PAD - bMinY;
+
+  const tempSvg = document.createElementNS(SVG_NS, 'svg');
+  tempSvg.setAttribute('width', contentW);
+  tempSvg.setAttribute('height', contentH);
+  tempSvg.setAttribute('xmlns', SVG_NS);
+  const cx2 = contentW / 2 + (panX - (contentW / 2 - (bMinX + bMaxX) / 2 - panX));
+  // Simpler: just offset so bbox top-left lands at (PAD, PAD)
+  const offX = PAD - bMinX;
+  const offY = PAD - bMinY;
+  const gRoot = mkEl('g');
+  gRoot.setAttribute('transform', `translate(${offX}, ${offY})`);
+  tempSvg.appendChild(gRoot);
+  const defs2 = mkEl('defs'); gRoot.appendChild(defs2);
+
+  zoomS = savedZ2; panX = savedPX2; panY = savedPY2;
+
+  // 3. Re-render all objects into gRoot using zoom=1, no pan offset
+  const sortedVis2 = visObjs.sort((a, b) => objDepth(a) - objDepth(b));
+  // Temporarily set zoom=1, pan=0 for proj() calls inside the loop
+  const sz3 = zoomS, spx3 = panX, spy3 = panY;
+  zoomS = 1; panX = 0; panY = 0;
+
+  sortedVis2.forEach(o => {
+    const gObj = mkEl('g');
+    if (o.type === 'plane') {
+      const corners = planeCorners(o);
+      const polyPts = ptsStr(corners);
+      const lm = o.axis === 'floor' ? 0.92 : o.axis === 'z' ? 1 : 0.82;
+      const poly = mkEl('polygon');
+      poly.setAttribute('points', polyPts);
+      if (o.image) {
+        poly.setAttribute('fill', 'none');
+        const patId = `pat-exp2-${o.id}`;
+        const pat = mkEl('pattern');
+        pat.setAttribute('id', patId);
+        pat.setAttribute('patternUnits', 'userSpaceOnUse');
+        pat.setAttribute('width', o.w);
+        pat.setAttribute('height', o.h);
+        const imgEl = mkEl('image');
+        imgEl.setAttribute('href', o.image);
+        imgEl.setAttributeNS('http://www.w3.org/1999/xlink', 'href', o.image);
+        imgEl.setAttribute('width', o.w);
+        imgEl.setAttribute('height', o.h);
+        imgEl.setAttribute('preserveAspectRatio', o.imgOpts?.fit === 'fit' ? 'xMidYMid meet' : 'none');
+        pat.appendChild(imgEl);
+        let defaultRx = -1, defaultRy = o.axis === 'floor' ? -1 : 1;
+        let rx = o.imgOpts?.flipH ? -defaultRx : defaultRx;
+        let ry = o.imgOpts?.flipV ? -defaultRy : defaultRy;
+        let rot = o.imgOpts?.rot || 0;
+        let icx = o.w / 2, icy = o.h / 2;
+        let imgTrans = `translate(${icx},${icy}) rotate(${rot}) scale(${rx},${ry}) translate(${-icx},${-icy})`;
+        let pts2 = corners.map(([cx, cy, cz]) => proj(cx, cy, cz));
+        let matrix2 = getParallelogramMatrix(o.w, o.h, pts2[2], pts2[3], pts2[1]);
+        pat.setAttribute('patternTransform', `${matrix2} ${imgTrans}`);
+        defs2.appendChild(pat);
+        poly.setAttribute('fill', `url(#${patId})`);
+      } else {
+        poly.setAttribute('fill', o.color);
+      }
+      poly.setAttribute('fill-opacity', o.opacity);
+      poly.setAttribute('stroke', 'rgba(0,0,0,0.12)');
+      poly.setAttribute('stroke-width', '0.8');
+      gObj.appendChild(poly);
+      if (!o.image) {
+        const shade = mkEl('polygon');
+        shade.setAttribute('points', polyPts);
+        shade.setAttribute('fill', `rgba(0,0,0,${(1 - lm) * 0.4})`);
+        gObj.appendChild(shade);
+      }
+    } else {
+      const faces = cubeCorners(o);
+      const lightMap = { btm: 0.6, back: 0.7, left: 0.75, front: 0.9, right: 0.8, top: 1 };
+      Object.keys(faces).map(fName => {
+        let fpts = faces[fName];
+        let fcx = (fpts[0][0] + fpts[2][0]) / 2, fcy = (fpts[0][1] + fpts[2][1]) / 2, fcz = (fpts[0][2] + fpts[2][2]) / 2;
+        return { name: fName, depth: calcPtDepth(fcx, fcy, fcz), pts: fpts };
+      }).sort((a, b) => a.depth - b.depth).forEach(f => {
+        const poly = mkEl('polygon');
+        poly.setAttribute('points', ptsStr(f.pts));
+        poly.setAttribute('fill', o.color);
+        poly.setAttribute('fill-opacity', o.opacity);
+        poly.setAttribute('stroke', 'rgba(0,0,0,0.1)');
+        poly.setAttribute('stroke-width', '0.6');
+        const lm = lightMap[f.name];
+        gObj.appendChild(poly);
+        const shade = mkEl('polygon');
+        shade.setAttribute('points', ptsStr(f.pts));
+        shade.setAttribute('fill', `rgba(0,0,0,${(1 - lm) * 0.55})`);
+        gObj.appendChild(shade);
+      });
+    }
+    gRoot.appendChild(gObj);
+  });
+
+  zoomS = sz3; panX = spx3; panY = spy3;
+
+  // 4. Rasterize at EXPORT_SCALE × for high DPI
+  const canvas = document.createElement('canvas');
+  canvas.width = contentW * EXPORT_SCALE;
+  canvas.height = contentH * EXPORT_SCALE;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(EXPORT_SCALE, EXPORT_SCALE);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, contentW, contentH);
+
+  const svgStr = new XMLSerializer().serializeToString(tempSvg);
   const blob = new Blob([svgStr], { type: 'image/svg+xml' });
   const url = URL.createObjectURL(blob);
+  const img = new Image();
 
   img.onload = async () => {
-    ctx.drawImage(img, 0, 0);
+    ctx.drawImage(img, 0, 0, contentW, contentH);
     URL.revokeObjectURL(url);
 
     if (type === 'pdf') {
       const { jsPDF } = await loadJsPDF();
-      const orientation = canvas.width > canvas.height ? 'l' : 'p';
-      const pdf = new jsPDF({
-        orientation: orientation,
-        unit: 'px',
-        format: [canvas.width, canvas.height]
-      });
-      
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, canvas.width, canvas.height);
+      const orientation = contentW > contentH ? 'l' : 'p';
+      const pdf = new jsPDF({ orientation, unit: 'px', format: [contentW, contentH], hotfixes: ['px_scaling'] });
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, contentW, contentH);
       pdf.save('booth-design.pdf');
     } else {
       const a = document.createElement('a');
       const mimes = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' };
-      a.href = canvas.toDataURL(mimes[type] || 'image/png', 0.9);
+      a.href = canvas.toDataURL(mimes[type] || 'image/png', 0.95);
       a.download = `booth-capture.${type}`;
       a.click();
     }
@@ -3097,19 +3218,27 @@ async function exportFlatFormat(type) {
     return;
   }
 
-  // Rasterize via canvas
+  // Scale up: world units (cm) are tiny in pixels, so multiply to get ~96dpi equivalent
+  // 1cm = ~4px at 96dpi, then 4x supersampling = 16x total
+  const FLAT_PX_PER_UNIT = 16;
+  const flatCanvasW = Math.round(totalW * FLAT_PX_PER_UNIT);
+  const flatCanvasH = Math.round(maxH * FLAT_PX_PER_UNIT);
+
   const canvas = document.createElement('canvas');
-  canvas.width = totalW; canvas.height = maxH;
+  canvas.width = flatCanvasW;
+  canvas.height = flatCanvasH;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, totalW, maxH);
+  ctx.fillRect(0, 0, flatCanvasW, flatCanvasH);
 
   const blob = new Blob([svgStr], { type: 'image/svg+xml' });
   const url = URL.createObjectURL(blob);
   const img = new Image();
+  img.width = flatCanvasW;
+  img.height = flatCanvasH;
 
   img.onload = async () => {
-    ctx.drawImage(img, 0, 0);
+    ctx.drawImage(img, 0, 0, flatCanvasW, flatCanvasH);
     URL.revokeObjectURL(url);
 
     if (type === 'pdf') {
@@ -3117,14 +3246,15 @@ async function exportFlatFormat(type) {
       const pdf = new jsPDF({
         orientation: totalW > maxH ? 'l' : 'p',
         unit: 'px',
-        format: [totalW, maxH]
+        format: [flatCanvasW, flatCanvasH],
+        hotfixes: ['px_scaling']
       });
-      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, totalW, maxH);
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, flatCanvasW, flatCanvasH);
       pdf.save('booth-flat-layout.pdf');
     } else {
       const a = document.createElement('a');
       const mimes = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' };
-      a.href = canvas.toDataURL(mimes[type] || 'image/png', 0.9);
+      a.href = canvas.toDataURL(mimes[type] || 'image/png', 0.95);
       a.download = `booth-flat-capture.${type}`;
       a.click();
     }
