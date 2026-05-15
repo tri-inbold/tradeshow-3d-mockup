@@ -50,7 +50,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   z-index: 100;
 }
 .logo{font-size:13px;font-weight:600;color:var(--text);letter-spacing:-.3px;margin-right:8px;display:flex;align-items:center;gap:5px;white-space:nowrap;}
-.logo-dot{width:8px;height:8px;background:var(--accent);border-radius:2px;}
 .tb-sep{width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0;}
 .tb-btn{height:28px;min-width:28px;padding:0 7px;background:transparent;border:none;border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;font-family:inherit;font-size:11px;font-weight:500;display:flex;align-items:center;gap:4px;transition:all .1s;white-space:nowrap;position:relative;}
 .tb-btn:hover{background:var(--surface3);color:var(--text);}
@@ -135,7 +134,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .tpl-box-label{font-size:10px;font-weight:600;color:var(--text2);letter-spacing:.3px;margin-bottom:10px;line-height:1.4;}
 .tpl-cards-row{display:flex;gap:8px;flex-wrap:wrap;}
 .tpl-card{cursor:pointer;transition:all .15s;overflow:visible;background:var(--surface);flex-shrink:0;}
-.tpl-card:hover{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
+.tpl-card:hover{border-color:var(--accent);box-shadow:0 0 0 2px var(--red);}
 .tpl-card svg{display:block;overflow:visible;}
 
 /* ── DETAIL MODAL ── */
@@ -162,14 +161,56 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .det-file-item .fi-rm:hover{color:var(--red);}
 #det-right{flex:1;overflow-y:auto;padding:14px;}
 #det-layers-list{display:flex;flex-direction:column;gap:8px;}
-.det-layer-card{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:border-color .12s,background .12s;}
-.det-layer-card.drag-over{border-color:var(--accent);background:var(--accent-bg);}
+.det-layer-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: all 0.12s;
+  display: flex;
+  align-items: center;
+  padding: 4px 10px; /* Slimmer padding */
+  gap: 8px;
+}
+.det-layer-card.drag-over {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-bg);
+}
 .det-layer-card-head{display:flex;align-items:center;gap:8px;padding:7px 10px; border-bottom:1px solid var(--border);border-left:5px solid transparent;}
-.det-layer-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
-.det-layer-name-input{flex:1;height:22px;padding:0 6px;border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:11px;color:var(--text);outline:none;background:transparent;}
-.det-layer-name-input:focus{border-color:var(--accent);}
+.det-layer-num {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px; /* Squared slightly */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.det-dim-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.det-layer-name-input {
+  flex: 1;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  outline: none;
+  background: transparent;
+  min-width: 0; /* Allows shrinking */
+}
+.det-layer-name-input:focus { background: #fff; border-color: var(--accent); }
+.det-layer-name-input::placeholder { color: var(--text3); opacity: 0.7; }
 .det-layer-body{display:flex;gap:6px;padding:8px 10px 10px 50px;align-items:center;}
-.det-dim-input{width:50px;height:24px;padding:0 6px;background:var(--surface3);border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:11px;color:var(--text);outline:none;text-align:center;}
+.det-dim-input{width:50px;height:24px;padding:0px;background:var(--surface3);border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:11px;color:var(--text);outline:none;text-align:center;}
 .det-dim-input:focus{border-color:var(--accent);background:var(--surface);}
 .det-dim-sep{font-size:11px;color:var(--text3);}
 .det-unit-sel{height:24px;padding:0 4px;background:var(--surface3);border:1px solid transparent;border-radius:3px;font-family:'Inter',sans-serif;font-size:10px;color:var(--text2);outline:none;cursor:pointer;}
@@ -308,7 +349,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 <!-- TOOLBAR -->
 <div id="toolbar">
   <div class="tb-left">
-  <div class="logo"><div class="logo-dot"></div>Nilfisk BoothCraft</div>
+  <div class="logo">Nilfisk BoothCraft</div>
   <div class="tb-sep"></div>
   <button class="tb-btn" onclick="newScene()">New</button>
   <button class="tb-btn" onclick="openTplModal()">Template</button>
@@ -355,11 +396,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   <div class="tb-right">
     <button class="btn-primary" onclick="toggleExportMenu(event)">Export to ▾</button>
     <div class="dropdown-content" id="export-menu">
-      <div class="dropdown-item" onclick="exportFormat('svg')">SVG Vector</div>
-      <div class="dropdown-item" onclick="exportFormat('png')">PNG Image</div>
-      <div class="dropdown-item" onclick="exportFormat('jpg')">JPG Image</div>
-      <div class="dropdown-item" onclick="exportFormat('webp')">WEBP Image</div>
-    </div>
+	  <div class="dropdown-item" onclick="exportFormat('pdf')">PDF Document</div>
+	  <div class="dropdown-item" onclick="exportFormat('jpg')">JPG Image</div>
+	  <div class="dropdown-item" onclick="exportFormat('png')">PNG Image</div>
+	  <div class="dropdown-item" onclick="exportFormat('webp')">WEBP Image</div>
+	  <div class="dropdown-item" onclick="exportFormat('svg')">SVG Vector</div>
+	</div>
   </div>
 </div>
 
@@ -451,7 +493,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   <div id="tpl-modal">
   <div id="tpl-modal-head">
     <h2>Choose a Booth Template</h2>
-    <button class="tpl-close" onclick="closeTplModal()">×</button>
+    <button class="tpl-close" onclick="closeTplModal(false)">×</button>
   </div>
   <div id="tpl-body">
 
@@ -474,11 +516,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <!-- Row 2: 1 wall incl. storage | 2 walls incl. storage -->
     <div class="tpl-section-row">
       <div class="tpl-box" style="flex:1;">
-        <div class="tpl-box-label">1 wall<br>incl. storage</div>
+        <div class="tpl-box-label">1 wall incl. storage</div>
         <div class="tpl-cards-row" id="tpl-row-1wall-s"></div>
       </div>
       <div class="tpl-box" style="flex:1;">
-        <div class="tpl-box-label">2 walls<br>incl. storage</div>
+        <div class="tpl-box-label">2 walls incl. storage</div>
         <div class="tpl-cards-row" id="tpl-row-2wall-s"></div>
       </div>
     </div>
@@ -486,7 +528,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
     <!-- Row 3: Other incl. centered storage — full width -->
     <div class="tpl-section-row">
       <div class="tpl-box" style="flex:1;">
-        <div class="tpl-box-label">Other<br>incl. centered storage</div>
+        <div class="tpl-box-label">Centered storage</div>
         <div class="tpl-cards-row" id="tpl-row-other"></div>
       </div>
     </div>
@@ -500,7 +542,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
   <div id="det-modal">
     <div id="det-modal-head">
       <h2 id="det-title">Configure Booth Layers</h2>
-      <button class="tpl-close" onclick="closeDetModal()">×</button>
+      <button class="tpl-close" onclick="closeDetModal(false)">×</button>
     </div>
 	<div id="det-body" style="flex-direction:column;">
       <div id="det-preview">
@@ -512,7 +554,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
       </div>
     </div>
     <div id="det-footer">
-      <button class="btn-secondary" onclick="closeDetModal()">Cancel</button>
+      <button class="btn-secondary" onclick="closeDetModal(false)">Cancel</button>
       <button class="btn-primary" onclick="applyDetTemplate()">Apply Template</button>
     </div>
   </div>
@@ -2925,49 +2967,84 @@ function generateOffscreenSVG() {
 function saveFile(){
   const state=JSON.stringify({objects,comments});
   const html=document.documentElement.outerHTML;
-  const injected=html.replace('</head>',`<script id="__bc_state__">window.__BC_STATE__=${state};<\/script></head>`);
+  const injected=html.replace('</head>',`<script id="__bc_state__">window.__BC_STATE__=JSON.parse(${JSON.stringify(state)});<\/script></head>`);
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([injected],{type:'text/html'}));a.download='boothcraft-design.html';a.click();
 }
 
-function exportFormat(type){
+// Helper to load jsPDF library dynamically
+async function loadJsPDF() {
+  if (window.jspdf) return window.jspdf;
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.onload = () => resolve(window.jspdf);
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+// Updated exportFormat to handle PDF
+async function exportFormat(type) {
   closeExportMenu();
 
-  if(isFlat){
+  if (isFlat) {
     exportFlatFormat(type);
     return;
   }
 
-  if(type === 'svg') {
-    const s=new XMLSerializer();const src='<?xml version="1.0"?>\n'+s.serializeToString(generateOffscreenSVG());
-    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([src],{type:'image/svg+xml'}));a.download='booth-export.svg';a.click();
+  if (type === 'svg') {
+    const s = new XMLSerializer();
+    const src = '<?xml version="1.0"?>\n' + s.serializeToString(generateOffscreenSVG());
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([src], { type: 'image/svg+xml' }));
+    a.download = 'booth-export.svg';
+    a.click();
     return;
   }
-  
-  const canvas=document.createElement('canvas'),vp=document.getElementById('viewport');
-  canvas.width=vp.clientWidth;canvas.height=vp.clientHeight;
-  const ctx=canvas.getContext('2d');ctx.fillStyle='#e8e8e8';ctx.fillRect(0,0,canvas.width,canvas.height);
-  const img=new Image(),svgStr=new XMLSerializer().serializeToString(generateOffscreenSVG());
-  const blob=new Blob([svgStr],{type:'image/svg+xml'}),url=URL.createObjectURL(blob);
-  
-  img.onload=()=>{
-    ctx.drawImage(img,0,0);
-    const a=document.createElement('a');
-    let mime = 'image/png';
-    if(type === 'jpg') mime = 'image/jpeg';
-    if(type === 'webp') mime = 'image/webp';
-    if(type === 'gif') mime = 'image/gif';
-    
-    a.href=canvas.toDataURL(mime, 0.9);
-    a.download=`booth-capture.${type}`;
-    a.click();
+
+  // Handle Raster (PNG, JPG, WEBP) and PDF
+  const canvas = document.createElement('canvas');
+  const vp = document.getElementById('viewport');
+  canvas.width = vp.clientWidth;
+  canvas.height = vp.clientHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff'; // PDF looks better with white background
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const img = new Image();
+  const svgStr = new XMLSerializer().serializeToString(generateOffscreenSVG());
+  const blob = new Blob([svgStr], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+
+  img.onload = async () => {
+    ctx.drawImage(img, 0, 0);
     URL.revokeObjectURL(url);
+
+    if (type === 'pdf') {
+      const { jsPDF } = await loadJsPDF();
+      const orientation = canvas.width > canvas.height ? 'l' : 'p';
+      const pdf = new jsPDF({
+        orientation: orientation,
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, canvas.width, canvas.height);
+      pdf.save('booth-design.pdf');
+    } else {
+      const a = document.createElement('a');
+      const mimes = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' };
+      a.href = canvas.toDataURL(mimes[type] || 'image/png', 0.9);
+      a.download = `booth-capture.${type}`;
+      a.click();
+    }
   };
-  img.src=url;
+  img.src = url;
 }
 
-async function exportFlatFormat(type){
+async function exportFlatFormat(type) {
   const planes = objects.filter(o => o.type === 'plane' && o.visible && o.axis !== 'floor');
-  if(!planes.length) return;
+  if (!planes.length) return;
 
   let totalW = 0, maxH = 0;
   planes.forEach(p => { totalW += p.w; maxH = Math.max(maxH, p.h); });
@@ -3022,23 +3099,35 @@ async function exportFlatFormat(type){
 
   // Rasterize via canvas
   const canvas = document.createElement('canvas');
-  canvas.width = totalW;
-  canvas.height = maxH;
+  canvas.width = totalW; canvas.height = maxH;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#e8e8e8';
+  ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, totalW, maxH);
 
-  const blob = new Blob([svgStr], {type:'image/svg+xml'});
+  const blob = new Blob([svgStr], { type: 'image/svg+xml' });
   const url = URL.createObjectURL(blob);
   const img = new Image();
-  img.onload = () => {
+
+  img.onload = async () => {
     ctx.drawImage(img, 0, 0);
     URL.revokeObjectURL(url);
-    const a = document.createElement('a');
-    const mimes = { png:'image/png', jpg:'image/jpeg', webp:'image/webp', gif:'image/gif' };
-    a.href = canvas.toDataURL(mimes[type] || 'image/png', 0.9);
-    a.download = `booth-flat-capture.${type}`;
-    a.click();
+
+    if (type === 'pdf') {
+      const { jsPDF } = await loadJsPDF();
+      const pdf = new jsPDF({
+        orientation: totalW > maxH ? 'l' : 'p',
+        unit: 'px',
+        format: [totalW, maxH]
+      });
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, totalW, maxH);
+      pdf.save('booth-flat-layout.pdf');
+    } else {
+      const a = document.createElement('a');
+      const mimes = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' };
+      a.href = canvas.toDataURL(mimes[type] || 'image/png', 0.9);
+      a.download = `booth-flat-capture.${type}`;
+      a.click();
+    }
   };
   img.src = url;
 }
@@ -3097,6 +3186,7 @@ document.addEventListener('keydown', e => {
   if(e.key==='+')doZoom(0.1);
   if(e.key==='-')doZoom(-0.1);
   if(e.key==='0'&&(e.metaKey||e.ctrlKey)){e.preventDefault();fitView();}
+  if((e.key==='s'||e.key==='S')&&(e.metaKey||e.ctrlKey)){e.preventDefault();saveFile();}
   
   const step=e.shiftKey?50:10;
   if(selectedIds.length){
@@ -3120,12 +3210,34 @@ document.addEventListener('keydown', e => {
 
 window.addEventListener('resize',()=>render());
 
-// ── RESTORE STATE ─────────────────────────────────────────────────────
-if(window.__BC_STATE__){
-  const s=window.__BC_STATE__;
-  objects=s.objects||[];comments=s.comments||[];
-  idCtr=objects.reduce((m,o)=>Math.max(m,o.id),0);
-}
+// ── STARTUP EXECUTION ──
+window.onload = () => {
+  // 1. Check if we are opening a saved file (.html file with injected state)
+  if(window.__BC_STATE__){
+    const s = window.__BC_STATE__;
+    objects = s.objects || [];
+    comments = s.comments || [];
+    idCtr = objects.reduce((m, o) => Math.max(m, o.id), 0);
+    
+    render();
+    renderComments();
+    updateProps();
+    setTimeout(fitView, 100);
+  } 
+  // 2. If it's a fresh start and no objects exist
+  else if (objects.length === 0) {
+    // Show the template picker immediately
+    openTplModal();
+    // We render the empty background so it doesn't look broken behind the modal
+    render();
+    updateProps();
+  } 
+  // 3. Normal fallback
+  else {
+    render();
+    updateProps();
+  }
+};
 
 // ── INIT DEMO ─────────────────────────────────────────────────────────
 function initDemo(){
@@ -3388,15 +3500,26 @@ function openTplModal(){
     const card = document.createElement('div');
     card.className = 'tpl-card';
     // Smaller thumbnails for the picker
-    const svgHtml = makeTplSvgSized(t.svgSegs, 150, 97);
+    const svgHtml = makeTplSvgSized(t.svgSegs, 176, 114);
     card.innerHTML = svgHtml;
-    card.onclick = () => { closeTplModal(); setTimeout(() => openDetModal(i), 0); };
+    card.onclick = () => { closeTplModal(true); setTimeout(() => openDetModal(i), 0); };
     row.appendChild(card);
   });
   document.getElementById('tpl-overlay').classList.add('open');
 }
-function closeTplModal(){ document.getElementById('tpl-overlay').classList.remove('open'); }
-document.getElementById('tpl-overlay').addEventListener('click', e => { if(e.target===e.currentTarget) closeTplModal(); });
+function closeTplModal(isProceeding = false){ 
+  document.getElementById('tpl-overlay').classList.remove('open'); 
+  // ONLY load demo if closing via "X" or clicking background (not proceeding)
+  if(!isProceeding && objects.length === 0) {
+    initDemo();
+    render();
+    updateProps();
+    setTimeout(fitView, 50);
+  }
+}
+document.getElementById('tpl-overlay').addEventListener('click', e => { 
+    if(e.target===e.currentTarget) closeTplModal(false); 
+});
 
 // ── Detail modal state ───────────────────────────────────────────
 let detTplIndex = 0;
@@ -3431,10 +3554,19 @@ function openDetModal(tplIdx){
 }
 
 let _detJustOpened = false;
-function closeDetModal(){ document.getElementById('det-overlay').classList.remove('open'); }
+function closeDetModal(isProceeding = false){ 
+  document.getElementById('det-overlay').classList.remove('open'); 
+  // ONLY load demo if user hits cancel/X and has no objects
+  if(!isProceeding && objects.length === 0) {
+    initDemo();
+    render();
+    updateProps();
+    setTimeout(fitView, 50);
+  }
+}
 document.getElementById('det-overlay').addEventListener('click', e => {
   if(_detJustOpened){ _detJustOpened = false; return; }
-  if(e.target===e.currentTarget) closeDetModal();
+  if(e.target===e.currentTarget) closeDetModal(false);
 });
 
 // ── Unified SVG renderer (scales base 156×100 coords to any output size) ──
@@ -3563,13 +3695,14 @@ function detFileDragStart(e, idx){
 }
 
 // ── Layer cards ──────────────────────────────────────────────────
-function cleanFileName(name){
+function cleanFileName(name) {
   return name
-    .replace(/\.[^/.]+$/, '')                          // remove extension
-    .replace(/_?PROOF\d*/gi, '')                       // remove _PROOF1 etc
-    .replace(/_?(DIGITAL|PRINT|FINAL|APPROVED|DRAFT)/gi, '')
-    .replace(/_?V\d+/gi, '').replace(/_?REV\d*/gi, '')
-    .replace(/[_-]+$/, '').trim();
+    .replace(/\.[^/.]+$/, '')                          // remove extension (.jpg, .pdf, etc)
+    .replace(/_?PROOF\d*/gi, '')                       // remove _PROOF1, PROOF2, etc
+    .replace(/_?(DIGITAL|PRINT|FINAL|APPROVED|DRAFT)/gi, '') // remove common tags
+    .replace(/_?V\d+/gi, '').replace(/_?REV\d*/gi, '') // remove versions/revisions
+    .replace(/[_-]+$/, '')                             // remove trailing underscores/dashes
+    .trim();
 }
 
 function renderDetLayers(){
@@ -3579,38 +3712,61 @@ function renderDetLayers(){
     const hasFile = !!f;
     const dispName = hasFile ? cleanFileName(f.name) : '';
     const color = TPL_COLORS[i];
+    const bgColor = hexToRgba(color, 0.05);
+
     return `<div class="det-layer-card" id="det-fd-${i}"
       ondragover="detLayerDragOver(event,${i})"
       ondragleave="detLayerDragLeave(event,${i})"
       ondrop="detLayerFileDrop(event,${i})"
-      style="border-left:5px solid ${color};">
-      <div class="det-layer-card-head">
-        <div class="det-layer-num" style="background:${color}">${i+1}</div>
-        <input class="det-layer-name-input" value="${l.userName || ''}"
-          oninput="detLayers[${i}].userName=this.value" placeholder="Layer name">
-        ${hasFile ? `<span style="font-size:11px;color:var(--text3);cursor:pointer;flex-shrink:0;padding:0 2px;" onclick="event.stopPropagation();detLayerClearFile(${i})" title="Clear">×</span>` : ''}
-      </div>
-      <div class="det-layer-body">
-        <input class="det-dim-input" value="${l.userW || ''}" placeholder="W"
-          oninput="detLayers[${i}].userW=parseFloat(this.value)||detLayers[${i}].userW" title="Width">
-        <span class="det-dim-sep">×</span>
-        <input class="det-dim-input" value="${l.userH || ''}" placeholder="H"
-          oninput="detLayers[${i}].userH=parseFloat(this.value)||detLayers[${i}].userH" title="Height">
-        <select class="det-unit-sel" onchange="detLayers[${i}].userUnit=this.value">
+      style="background:${bgColor};">
+      
+      <!-- 1. Number Badge far left -->
+      <div class="det-layer-num" style="background:${color}; width:20px; height:20px;">${i+1}</div>
+
+      <!-- 2. Dimensions -->
+      <div class="det-dim-group" style="display:flex; align-items:center; gap:2px;">
+        <input class="det-dim-input" style="width:36px; height:22px; font-size:10px; background:transparent;" 
+          value="${l.userW || ''}" placeholder="W"
+          oninput="detLayers[${i}].userW=parseFloat(this.value)||detLayers[${i}].userW">
+        <input class="det-dim-input" style="width:36px; height:22px; font-size:10px; background:transparent;" 
+          value="${l.userH || ''}" placeholder="H"
+          oninput="detLayers[${i}].userH=parseFloat(this.value)||detLayers[${i}].userH">
+        <select class="det-unit-sel" style="height:22px; font-size:9px; background:transparent; border:none;" onchange="detLayers[${i}].userUnit=this.value">
           <option value="cm" ${l.userUnit==='cm'?'selected':''}>cm</option>
           <option value="mm" ${l.userUnit==='mm'?'selected':''}>mm</option>
           <option value="in" ${l.userUnit==='in'?'selected':''}>in</option>
         </select>
-        <label style="flex:1;min-width:0;cursor:pointer;font-size:10px;color:${hasFile?'var(--green)':'var(--text3)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-          <input type="file" accept="image/*,application/pdf" style="display:none"
-            onchange="detLayerFileInput(this,${i})">
-          ${hasFile ? `✓ ${dispName}` : '↓ Drop or click'}
-        </label>
       </div>
+
+      <!-- 3. Name Input (updated to handle drops) -->
+      <input class="det-layer-name-input" 
+        value="${l.userName || ''}" 
+        placeholder="Wall name..."
+        oninput="detLayers[${i}].userName=this.value"
+        ondragover="detLayerDragOver(event,${i})" 
+        ondrop="detLayerFileDrop(event,${i})">
+
+      <!-- 4. File Drop/Upload Status -->
+      <label style="max-width:110px; cursor:pointer; font-size:10px; color:${hasFile?'var(--green)':'var(--text3)'}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; align-items:center; gap:4px;">
+        <input type="file" accept="image/*,application/pdf" style="display:none"
+          onchange="detLayerFileInput(this,${i})">
+        <span style="font-size:12px;">${hasFile ? '✓' : '+'}</span>
+        ${hasFile ? dispName : 'Add image'}
+      </label>
+
+      <!-- 5. Clear Button -->
+      ${hasFile ? `<span style="font-size:16px; color:var(--text3); cursor:pointer; padding:0 4px; line-height:1;" 
+        onclick="event.stopPropagation();detLayerClearFile(${i})">×</span>` : ''}
     </div>`;
   }).join('');
 }
 
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 function detLayerDragOver(e,i){
   e.preventDefault();
@@ -3621,18 +3777,28 @@ function detLayerDragLeave(e,i){
   document.getElementById(`det-fd-${i}`)?.classList.remove('drag-over');
 }
 
-function detLayerFileDrop(e,layerIdx){
+function detLayerFileDrop(e, layerIdx) {
   e.preventDefault();
   document.getElementById(`det-fd-${layerIdx}`)?.classList.remove('drag-over');
 
-  // 1. Dragging from the file list?
+  // 1. Dragging from the internal modal file list
   const fromListIdx = detDragFileIdx;
-  if(fromListIdx !== null && e.dataTransfer.getData('text/plain') !== ''){
-    detLayers[layerIdx].fileIdx = fromListIdx;
-    // Try to pull dims from that file's detected dims
+  if (fromListIdx !== null && e.dataTransfer.getData('text/plain') !== '') {
     const f = detFiles[fromListIdx];
-    if(f && f.detectedW){ detLayers[layerIdx].userW = f.detectedW; detLayers[layerIdx].userH = f.detectedH; detLayers[layerIdx].userUnit = f.detectedUnit; }
-    if(f) f.assignedLayer = layerIdx;
+    if (f) {
+      detLayers[layerIdx].fileIdx = fromListIdx;
+      f.assignedLayer = layerIdx;
+      
+      // NEW: Sync name from file
+      detLayers[layerIdx].userName = cleanFileName(f.name);
+
+      // Try to pull dims
+      if (f.detectedW) {
+        detLayers[layerIdx].userW = f.detectedW;
+        detLayers[layerIdx].userH = f.detectedH;
+        detLayers[layerIdx].userUnit = f.detectedUnit;
+      }
+    }
     detDragFileIdx = null;
     renderDetFilelist();
     renderDetLayers();
@@ -3640,8 +3806,11 @@ function detLayerFileDrop(e,layerIdx){
   }
 
   // 2. External file drop directly onto layer
-  const file = e.dataTransfer.files[0]; if(!file) return;
-  addDetFile(file, layerIdx);
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    addDetFile(file, layerIdx);
+    return;
+  }
 }
 
 function detLayerFileInput(input, layerIdx){
@@ -3658,21 +3827,26 @@ function detLayerClearFile(i){
 }
 
 // ── Add file to global list ──────────────────────────────────────
-function addDetFile(file, assignTo=null){
-  // Check dupe by name
-  const existing = detFiles.findIndex(f=>f.name===file.name);
-  if(existing >= 0){
-    if(assignTo !== null){
-      if(detFiles[existing].assignedLayer !== null) { /* already has layer, reassign */ }
+function addDetFile(file, assignTo = null) {
+  // Check duplicate by name
+  const existing = detFiles.findIndex(f => f.name === file.name);
+  if (existing >= 0) {
+    if (assignTo !== null) {
       detFiles[existing].assignedLayer = assignTo;
       detLayers[assignTo].fileIdx = existing;
+      detLayers[assignTo].userName = cleanFileName(file.name); // NEW: Sync name
       const dims = parseDimFromName(file.name);
-      if(dims){ detLayers[assignTo].userW=dims.w; detLayers[assignTo].userH=dims.h; detLayers[assignTo].userUnit=dims.unit; }
-      renderDetPreview(); renderDetLayers();
+      if (dims) {
+        detLayers[assignTo].userW = dims.w;
+        detLayers[assignTo].userH = dims.h;
+        detLayers[assignTo].userUnit = dims.unit;
+      }
+      renderDetPreview();
+      renderDetLayers();
     }
     return;
   }
-  if(detFiles.length >= 7){ alert('Maximum 7 files.'); return; }
+  if (detFiles.length >= 7) { alert('Maximum 7 files.'); return; }
 
   const dims = parseDimFromName(file.name);
   const reader = new FileReader();
@@ -3688,19 +3862,31 @@ function addDetFile(file, assignTo=null){
     };
     detFiles.push(entry);
     const idx = detFiles.length - 1;
-    if(assignTo !== null){
+    
+    if (assignTo !== null) {
       detLayers[assignTo].fileIdx = idx;
-      if(dims){ detLayers[assignTo].userW=dims.w; detLayers[assignTo].userH=dims.h; detLayers[assignTo].userUnit=dims.unit; }
+      detLayers[assignTo].userName = cleanFileName(file.name); // NEW: Sync name
+      if (dims) {
+        detLayers[assignTo].userW = dims.w;
+        detLayers[assignTo].userH = dims.h;
+        detLayers[assignTo].userUnit = dims.unit;
+      }
     }
-    // Auto-match by name if no assignTo
-    if(assignTo === null){
-      const norm = f => f.replace(/\.[^/.]+$/,'').replace(/_(?:PROOF\d*|DIGITAL|PRINT|FINAL|APPROVED|V\d+|REV\d*|draft|proof\d*|digital|print|final|approved|v\d+|rev\d*)$/i,'').trim().toLowerCase();
+    
+    // Auto-match logic if no specific layer was targeted
+    if (assignTo === null) {
+      const norm = f => f.replace(/\.[^/.]+$/, '').replace(/_(?:PROOF\d*|DIGITAL|PRINT|FINAL|APPROVED|V\d+|REV\d*|draft|proof\d*|digital|print|final|approved|v\d+|rev\d*)$/i, '').trim().toLowerCase();
       const fNorm = norm(file.name);
       const match = detLayers.findIndex(l => norm(l.userName) === fNorm || fNorm.includes(norm(l.userName)) || norm(l.userName).includes(fNorm));
-      if(match >= 0 && detLayers[match].fileIdx === null){
+      if (match >= 0 && detLayers[match].fileIdx === null) {
         detLayers[match].fileIdx = idx;
         entry.assignedLayer = match;
-        if(dims){ detLayers[match].userW=dims.w; detLayers[match].userH=dims.h; detLayers[match].userUnit=dims.unit; }
+        detLayers[match].userName = cleanFileName(file.name); // NEW: Sync name
+        if (dims) {
+          detLayers[match].userW = dims.w;
+          detLayers[match].userH = dims.h;
+          detLayers[match].userUnit = dims.unit;
+        }
       }
     }
     renderDetPreview();
@@ -3917,15 +4103,10 @@ async function applyDetTemplate() {
   objects.unshift(floor);
 
   // ── REFRESH VIEW ────────────────────────────────────────────────
-  closeDetModal();
+  closeDetModal(true);
   render();
   setTimeout(() => { fitView(); render(); updateProps(); }, 50);
 }
-
-if(!objects.length)initDemo();
-fitView();
-renderComments();
-updateProps();
 </script>
 </body>
 </html>
