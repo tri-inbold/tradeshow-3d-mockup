@@ -105,10 +105,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .prop-unit{font-size:10px;color:var(--text3);min-width:16px;text-align:right;}
 
 /* ── LAYER LIST ── */
-.layer-item{display:flex;align-items:center;gap:6px;padding:4px 8px 4px 12px;cursor:pointer;border-radius:0;transition:background .08s;position:relative;}
+.layer-item{display:flex;flex-direction:column;gap:3px;padding:4px 8px 4px 12px;cursor:pointer;border-radius:0;transition:background .08s;position:relative;}
 .layer-item:hover{background:var(--surface3);}
 .layer-item.selected{background:var(--accent-bg);color:var(--accent);}
 .layer-item.selected .layer-name{color:var(--accent);}
+.layer-item-main{display:flex;align-items:center;gap:6px;}
 .layer-thumb{width:14px;height:14px;border-radius:2px;flex-shrink:0;border:1px solid rgba(0,0,0,.08);}
 .layer-name{flex:1;font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .layer-type{font-size:9px;color:var(--text3);background:var(--surface3);padding:1px 4px;border-radius:2px;}
@@ -116,6 +117,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 .layer-item:hover .layer-vis-btn{opacity:.5;}
 .layer-item:hover .layer-vis-btn:hover{opacity:1;background:var(--border);}
 .layer-item.hidden .layer-name{opacity:.4;}
+.layer-tex-list{display:flex;flex-wrap:wrap;gap:3px;padding-left:20px;}
+.layer-tex{display:flex;align-items:center;gap:3px;max-width:170px;font-size:9px;line-height:14px;color:var(--text3);background:var(--surface3);border-radius:2px;padding:1px 4px;}
+.layer-tex-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.layer-tex-face{flex-shrink:0;color:var(--accent);font-weight:600;}
 
 /* ── TEMPLATE MODAL ── */
 #tpl-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;display:none;align-items:center;justify-content:center;}
@@ -413,6 +418,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
       <div style="margin-left:auto; display:flex; gap:2px;">
         <button class="tb-btn" style="height:22px; padding:0 5px; font-size:10px;" onclick="setTool('plane')">+ Plane</button>
         <button class="tb-btn" style="height:22px; padding:0 5px; font-size:10px;" onclick="setTool('cube')">+ Cube</button>
+		<button class="tb-btn" style="height:22px; padding:0 5px; font-size:10px;" onclick="setTool('man')">+ Man</button>
+
       </div>
     </div>
 	
@@ -620,13 +627,33 @@ function mkPlane(opts={}){
   return{id:++idCtr,type:'plane',name:opts.name||`Wall ${idCtr}`,
     x:opts.x||0,y:opts.y||0,z:opts.z||0,
     w:opts.w||100,h:opts.h||250,axis:opts.axis||'z',rotZ:opts.rotZ||0,
-    color:opts.color||'#e8e8e8',opacity:1,image:null,imgOpts:{},visible:true,locked:false};
+    color:opts.color||'#e8e8e8',opacity:1,image:null,images:{},imgOpts:{},texNames:{},visible:true,locked:false};
 }
 function mkCube(opts={}){
   return{id:++idCtr,type:'cube',name:opts.name||`Box ${idCtr}`,
     x:opts.x||0,y:opts.y||0,z:opts.z||0,
     w:opts.w||60,d:opts.d||60,h:opts.h||60,rotZ:opts.rotZ||0,
-    color:opts.color||'#e0e0e0',opacity:1,images:{},imgOpts:{},visible:true,locked:false};
+    color:opts.color||'#e0e0e0',opacity:1,images:{},imgOpts:{},texNames:{},visible:true,locked:false};
+}
+
+function mkman(opts={}){
+  return{
+    id: ++idCtr,
+    type: 'man',
+    name: opts.name || `Man ${idCtr}`,
+    x: opts.x || 0,
+    y: opts.y || 0,
+    z: opts.z || 0,
+    w: 60, d: 20, h: 180,
+    rotZ: opts.rotZ || 0,
+    color: opts.color || '#ffcc99', 
+    opacity: 1,
+    visible: true,
+    locked: false,
+    images: {},
+    imgOpts: {},
+    texNames: {}
+  };
 }
 
 // ── PROJECTION ─────────────────────────────────────────────────────────
@@ -730,7 +757,7 @@ function getSceneCenter(){
 
 // ── SNAP ──────────────────────────────────────────────────────────────
 const SNAP_STEP=10;
-function snapV(v){return snapEnabled?Math.round(v/SNAP_STEP)*SNAP_STEP:r2(v);}
+function snapV(v){return snapEnabled?Math.round(v/SNAP_STEP)*SNAP_STEP:Math.round(v);}
 function snapObj(obj){
   if(!snapEnabled)return;
   const candidates=objects.filter(o=>o.id!==obj.id&&o.visible);
@@ -813,7 +840,8 @@ function render(){
   if(!isFlat) {
     objects.filter(o=>o.visible).forEach(o => {
       if(o.type === 'plane') drawCssPlane(sceneNode, o);
-      else drawCssCube(sceneNode, o);
+      else if(o.type === 'cube') drawCssCube(sceneNode, o);
+      else if(o.type === 'man') drawCssman(sceneNode, o);
     });
   }
   // flat mode draws into its own 2D overlay, see drawFlatMode()
@@ -833,7 +861,7 @@ function render(){
       const o=objects.find(o=>o.id===id);
       if(o&&o.visible){
         if(o.type==='plane') drawHandles(g,o);
-        else drawCubeResizeDots(g,o);
+        else if(o.type==='cube') drawCubeResizeDots(g,o);
       }
     });
   }
@@ -856,93 +884,110 @@ function render(){
 }
 
 function drawCssPlane(scene, p) {
+  if(!p.images) p.images={};
+  if(!p.imgOpts) p.imgOpts={};
+
+  // Render front and back as 2 separate sibling divs (same position, back one flipped)
+  ['front','back'].forEach(face => {
+    const isBack = face === 'back';
+    const fImg  = p.images[face];
+    const fOpts = p.imgOpts[face] || {};
+
     const div = document.createElement('div');
     div.style.position = 'absolute';
-    div.style.width = p.w + 'px';
+    div.style.width  = p.w + 'px';
     div.style.height = p.h + 'px';
-    div.style.backgroundColor = p.image ? 'transparent' : p.color;
     div.style.opacity = p.opacity;
+    div.style.transformOrigin = '0 0';
 
+    // Back face: rotateY(180deg) around the horizontal centre of the wall.
+    // We do this by shifting right by w, then rotating 180 around Y.
+    // The base transform must come first, then the face flip appended.
+    let baseTx;
     if (p.axis === 'floor') {
-        div.style.transformOrigin = '0 0';
-        div.style.transform = `translate3d(${p.x}px, ${p.y}px, ${p.z}px) rotateZ(${p.rotZ || 0}deg)`;
+      baseTx = `translate3d(${p.x}px, ${p.y}px, ${p.z}px) rotateZ(${p.rotZ || 0}deg)`;
     } else {
-        div.style.transformOrigin = '0 0';
-        div.style.transform = `translate3d(${p.x}px, ${p.y}px, ${p.z + p.h}px) rotateZ(${p.rotZ || 0}deg) rotateX(-90deg)`;
+      baseTx = `translate3d(${p.x}px, ${p.y}px, ${p.z + p.h}px) rotateZ(${p.rotZ || 0}deg) rotateX(-90deg)`;
     }
+    div.style.transform = isBack
+      ? `${baseTx} translate3d(${p.w}px, 0, 0) rotateY(180deg) translateZ(0.1px)`
+      : `${baseTx} translateZ(0.1px)`;
 
-    if (p.image) {
-        div.style.overflow = 'hidden';
-        const img = document.createElement('img');
-        img.src = p.image;
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = p.imgOpts?.fit === 'fit' ? 'contain' : 'fill';
-        
-        // defaultRx=-1 corrects the back-face mirror from rotateX(-90deg).
-        // _faceCorrect=true means viewer sees front face — no mirror correction needed.
+    div.style.backgroundColor = fImg ? 'transparent' : p.color;
+
+    if (fImg) {
+      div.style.overflow = 'hidden';
+      const img = document.createElement('img');
+      img.src = fImg;
+      img.style.width  = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = fOpts.fit === 'fit' ? 'contain' : 'fill';
+      img.style.pointerEvents = 'none';
+
+      // Front face: same flip logic as before.
+      // Back face: rotateY(180deg) already mirrors X, so the image sits correct
+      // without any extra scale needed — just honour user flipH/flipV/rot.
+      let rx, ry;
+      if (isBack) {
+        rx = fOpts.flipH ? -1 : 1;
+        ry = fOpts.flipV ? -1 : 1;
+      } else {
         const baseRx = p._faceCorrect ? 1 : -1;
         const defaultRy = p.axis === 'floor' ? -1 : 1;
-
-        const rx = p.imgOpts?.flipH ? -baseRx : baseRx;
-        const ry = p.imgOpts?.flipV ? -defaultRy : defaultRy;
-        const rot = p.imgOpts?.rot || 0;
-
-        img.style.transform = `rotate(${rot}deg) scale(${rx}, ${ry})`;
-        img.style.pointerEvents = 'none';
-        div.appendChild(img);
+        rx = fOpts.flipH ? -baseRx : baseRx;
+        ry = fOpts.flipV ? -defaultRy : defaultRy;
+      }
+      const rot = fOpts.rot || 0;
+      img.style.transform = `rotate(${rot}deg) scale(${rx}, ${ry})`;
+      div.appendChild(img);
     } else {
-        const lm = p.axis === 'floor' ? 0.92 : (p.axis === 'z' ? 1 : 0.82);
-        if (lm < 1) {
-            const shade = document.createElement('div');
-            shade.style.position = 'absolute';
-            shade.style.inset = '0';
-            shade.style.backgroundColor = `rgba(0,0,0,${(1-lm)*0.4})`;
-            shade.style.pointerEvents = 'none';
-            div.appendChild(shade);
-        }
+      const lm = p.axis === 'floor' ? 0.92 : (p.axis === 'z' ? 1 : 0.82);
+      // Back face slightly darker so you can tell which side you're on
+      const shadeLm = isBack ? Math.max(0, lm - 0.15) : lm;
+      if (shadeLm < 1) {
+        const shade = document.createElement('div');
+        shade.style.position = 'absolute';
+        shade.style.inset = '0';
+        shade.style.backgroundColor = `rgba(0,0,0,${(1 - shadeLm) * 0.4})`;
+        shade.style.pointerEvents = 'none';
+        div.appendChild(shade);
+      }
     }
 
     if (selectedIds.includes(p.id)) {
-        div.style.boxShadow = 'inset 0 0 0 1.5px #0d99ff';
+      div.style.boxShadow = 'inset 0 0 0 1.5px #0d99ff';
     }
 
     div.setAttribute('data-id', p.id);
     div.setAttribute('data-type', 'plane');
+    div.setAttribute('data-face', face);
     div.style.pointerEvents = 'auto';
     div.style.cursor = tool === 'comment' ? 'crosshair' : 'move';
     div.addEventListener('mousedown', e => {
-        if (e.button !== 0) return;
-        e.stopPropagation();
-        handleObjectDown(e, p.id);
+      if (e.button !== 0) return;
+      e.stopPropagation();
+      selectedCubeFace = face; // track which face was clicked
+      handleObjectDown(e, p.id);
     });
 
-    scene.appendChild(div);
-
-    if (showNames) {
+    if (showNames && !isBack) {
       const lbl = document.createElement('div');
       lbl.style.cssText = `
-        position:absolute;
-        top:4px; left:4px;
-        padding:1px 5px;
-        background:rgba(0,0,0,0.45);
-        color:#fff;
-        font-family:'Inter',sans-serif;
-        font-size:10px;
-        font-weight:500;
-        border-radius:3px;
-        pointer-events:none;
-        white-space:nowrap;
-        line-height:16px;
-        max-width:calc(100% - 10px);
-        overflow:hidden;
-        text-overflow:ellipsis;
+        position:absolute; top:4px; left:4px; padding:1px 5px;
+        background:rgba(0,0,0,0.45); color:#fff;
+        font-family:'Inter',sans-serif; font-size:10px; font-weight:500;
+        border-radius:3px; pointer-events:none; white-space:nowrap;
+        line-height:16px; max-width:calc(100% - 10px);
+        overflow:hidden; text-overflow:ellipsis;
         transform:scaleX(${p._faceCorrect ? 1 : -1});
         transform-origin:left center;
       `;
       lbl.textContent = p.name;
       div.appendChild(lbl);
-    }	
+    }
+
+    scene.appendChild(div);
+  });
 }
 
 function drawCssCube(scene, o) {
@@ -1044,6 +1089,84 @@ function drawCssCube(scene, o) {
         cube.appendChild(face);
     });
     scene.appendChild(cube);
+}
+
+function drawCssman(scene, o) {
+    const container = document.createElement('div');
+    container.style.position = 'absolute';
+    container.style.transformStyle = 'preserve-3d';
+    container.style.transformOrigin = '0 0';
+    const scale = (o.h || 166) / 166;
+	container.style.transform = `translate3d(${o.x}px, ${o.y}px, ${o.z}px) rotateZ(${o.rotZ || 0}deg) scale3d(${scale}, ${scale}, ${scale})`;
+    container.style.width = o.w + 'px';
+    container.style.height = o.d + 'px';
+    container.style.pointerEvents = 'none';
+
+    // Hình các khối cơ thể
+    const skin = o.color;
+    const shirt = '#38AFD9'; // Áo màu xanh
+    const pants = '#28313F'; // Quần màu tối
+
+    const parts = [
+        { name: 'torso', w: 40, d: 20, h: 60, x: 10, y: 0, z: 80, c: shirt },
+        { name: 'head', w: 20, d: 20, h: 25, x: 20, y: 0, z: 140, c: skin },
+        { name: 'legL', w: 15, d: 15, h: 80, x: 10, y: 2.5, z: 0, c: pants },
+        { name: 'legR', w: 15, d: 15, h: 80, x: 35, y: 2.5, z: 0, c: pants },
+        { name: 'armL', w: 10, d: 10, h: 65, x: 0, y: 5, z: 75, c: skin },
+        { name: 'armR', w: 10, d: 10, h: 65, x: 50, y: 5, z: 75, c: skin }
+    ];
+
+    parts.forEach(p => {
+        const box = document.createElement('div');
+        box.style.position = 'absolute';
+        box.style.transformStyle = 'preserve-3d';
+        box.style.transform = `translate3d(${p.x}px, ${p.y}px, ${p.z}px)`;
+
+        const faces =[
+            { name: 'btm', tx: `translateZ(0)`, w: p.w, h: p.d, lm: 0.6 },
+            { name: 'top', tx: `translateZ(${p.h}px)`, w: p.w, h: p.d, lm: 1 },
+            { name: 'back', tx: `translateZ(${p.h}px) rotateX(-90deg)`, w: p.w, h: p.h, lm: 0.7 },
+            { name: 'front', tx: `translate3d(0, ${p.d}px, ${p.h}px) rotateX(-90deg)`, w: p.w, h: p.h, lm: 0.9 },
+            { name: 'left', tx: `translateZ(${p.h}px) rotateZ(90deg) rotateX(-90deg)`, w: p.d, h: p.h, lm: 0.75 },
+            { name: 'right', tx: `translate3d(${p.w}px, 0, ${p.h}px) rotateZ(90deg) rotateX(-90deg)`, w: p.d, h: p.h, lm: 0.8 }
+        ];
+
+        faces.forEach(f => {
+            const face = document.createElement('div');
+            face.style.position = 'absolute';
+            face.style.width = f.w + 'px';
+            face.style.height = f.h + 'px';
+            face.style.transformOrigin = '0 0';
+            face.style.transform = f.tx;
+            face.style.backgroundColor = p.c;
+
+            // Xử lý tương tác click & drag
+            face.setAttribute('data-id', o.id);
+            face.setAttribute('data-type', 'man');
+            face.style.pointerEvents = 'auto';
+            face.style.cursor = tool === 'comment' ? 'crosshair' : 'move';
+
+            face.addEventListener('mousedown', e => {
+                if(e.button !== 0) return;
+                e.stopPropagation();
+                handleObjectDown(e, o.id);
+            });
+
+            // Đổ bóng (Shading)
+            if (f.lm < 1) {
+                const shade = document.createElement('div');
+                shade.style.position = 'absolute';
+                shade.style.inset = '0';
+                shade.style.backgroundColor = `rgba(0,0,0,${(1-f.lm)*0.55})`;
+                shade.style.pointerEvents = 'none';
+                face.appendChild(shade);
+            }
+            box.appendChild(face);
+        });
+        container.appendChild(box);
+    });
+
+    scene.appendChild(container);
 }
 
 function drawFlatOverlay(){
@@ -1521,7 +1644,6 @@ function drawHandles(g,o){
   }
 }
 
-// ── PERSPECTIVE ORIGIN PICKER (9-dot panel) ───────────────────────────
 // ── PERSPECTIVE ORIGIN PICKER ─────────────────────────────────────────
 function getOriginDotPoints() {
   const allPts = objects.filter(o => !(o.type==='plane' && o.axis==='floor')).flatMap(o =>
@@ -1718,14 +1840,15 @@ function vpDown(e){
     e.preventDefault();return;
   }
   
-  if(tool==='plane'||tool==='cube'){
+  if(tool==='plane'||tool==='cube'||tool==='man'){
     const{mx,my}=svgCoords(e);
     let delta=getWMPosDelta(mx,my, 0);
     const sx=snapV(delta.dwx),sy=snapV(delta.dwy),sz=snapV(delta.dwz);
     saveState();
     let o;
-    if(tool==='plane')o=mkPlane({x:sx,y:sy,z:sz,w:100,h:250,axis:'z',rotZ:0,color:COLORS[Math.floor(Math.random()*3)+1]});
-    else o=mkCube({x:sx,y:sy,z:sz,w:80,d:80,h:80,color:COLORS[1]});
+    if(tool==='plane') o=mkPlane({x:sx,y:sy,z:sz,w:100,h:250,axis:'z',rotZ:0,color:COLORS[Math.floor(Math.random()*3)+1]});
+    else if(tool==='cube') o=mkCube({x:sx,y:sy,z:sz,w:80,d:80,h:80,color:COLORS[1]});
+    else if(tool==='man') o=mkman({x:sx,y:sy,z:sz});
     objects.push(o);selectedIds=[o.id];setTool('select');render();updateProps();
   }
 }
@@ -1812,7 +1935,7 @@ function vpMove(e){
     render();return;
   }
 
-  // THRESHOLD CHECK: Only start dragging if mouse moved > 5 pixels
+  // THRESHOLD CHECK: Chỉ bắt đầu drag nếu chuột di chuyển > 5 pixels
   if(window._dragPending && dragId !== null) {
     const mdx = e.clientX - dragSX, mdy = e.clientY - dragSY;
     if(Math.hypot(mdx, mdy) > 5) {
@@ -1821,10 +1944,12 @@ function vpMove(e){
     }
   }
 
+  // KHỐI XỬ LÝ DI CHUYỂN (MOVE POSITION)
   if(isDragging && dragId !== null){
     hasMoved = true;
     const dx = (e.clientX - dragSX) / zoomS;
     const dy = (e.clientY - dragSY) / zoomS;
+    
     const primaryOff = window.dragOffsets.find(off => off.id === dragId);
     if(!primaryOff) return;
     
@@ -1832,9 +1957,11 @@ function vpMove(e){
     let delta = getWMPosDelta(dx, dy, p0.sz);
     
     const primaryObj = objects.find(o => o.id === dragId);
-    let targetX = primaryOff.ox + delta.dwx;
-    let targetY = primaryOff.oy + delta.dwy;
-    let targetZ = primaryOff.oz + delta.dwz;
+    
+    // TÍNH TOÁN VÀ LÀM TRÒN THÀNH SỐ CHẴN (SỐ NGUYÊN)
+    let targetX = Math.round(primaryOff.ox + delta.dwx);
+    let targetY = Math.round(primaryOff.oy + delta.dwy);
+    let targetZ = Math.round(primaryOff.oz + delta.dwz);
 
     let dummy = { id: dragId, x: targetX, y: targetY, z: targetZ, w: primaryObj.w, h: primaryObj.h, d: primaryObj.d };
     snapObj(dummy);
@@ -1843,14 +1970,16 @@ function vpMove(e){
     let actualDy = dummy.y - primaryOff.oy;
     let actualDz = dummy.z - primaryOff.oz;
 
+    // Áp dụng di chuyển (làm tròn) cho TẤT CẢ object đang được chọn
     window.dragOffsets.forEach(off => {
       let obj = objects.find(o => o.id === off.id);
       if(obj) {
-        obj.x = r2(off.ox + actualDx);
-        obj.y = r2(off.oy + actualDy);
-        obj.z = r2(off.oz + actualDz);
+        obj.x = Math.round(off.ox + actualDx);
+        obj.y = Math.round(off.oy + actualDy);
+        obj.z = Math.round(off.oz + actualDz);
       }
     });
+    
     render(); updateProps(); return;
   }
   
@@ -1919,7 +2048,8 @@ function vpMove(e){
     const scale = isPerspective ? 6000 / (6000 - p0.sz) : 1;
     const dz = -( (e.clientY - dragSY) / zoomS ) / (effectiveCosX * CM_PX * scale);
 
-    const sv = v => snapEnabled ? Math.max(5, snapV(v)) : Math.max(5, r2(v));
+    const sv = v => snapEnabled ? Math.max(5, snapV(v)) : Math.max(5, Math.round(v));
+
     const pi = resizeNode.pIndex;
 
     // Corners: 0=BL(x,y,z), 1=BR(x+w,y+w,z), 2=BR-top, 3=BL-top
@@ -1951,54 +2081,6 @@ function vpMove(e){
     }
 
     render(); updateProps(); return;
-  }
-  
-  // Only start dragging if mouse moves more than 5 pixels
-  if(window._dragPending && dragId !== null) {
-    const mdx = e.clientX - dragSX, mdy = e.clientY - dragSY;
-    if(Math.hypot(mdx, mdy) > 5) {
-      isDragging = true;
-      window._dragPending = false;
-    }
-  }
-
-  if(isDragging && dragId !== null){
-    hasMoved = true;
-    const dx = (e.clientX - dragSX) / zoomS;
-    const dy = (e.clientY - dragSY) / zoomS;
-    
-    const primaryOff = window.dragOffsets.find(off => off.id === dragId);
-    if(!primaryOff) return;
-    
-    const p0 = proj(primaryOff.ox, primaryOff.oy, primaryOff.oz);
-    let delta = getWMPosDelta(dx, dy, p0.sz);
-    
-    // Calculate snapped movement for the primary object
-    let targetX = primaryOff.ox + delta.dwx;
-    let targetY = primaryOff.oy + delta.dwy;
-    let targetZ = primaryOff.oz + delta.dwz;
-
-    const primaryObj = objects.find(o => o.id === dragId);
-    let dummy = { id: dragId, x: targetX, y: targetY, z: targetZ, w: primaryObj.w, h: primaryObj.h, d: primaryObj.d };
-    snapObj(dummy);
-
-    let actualDx = dummy.x - primaryOff.ox;
-    let actualDy = dummy.y - primaryOff.oy;
-    let actualDz = dummy.z - primaryOff.oz;
-
-    // Apply movement to all selected objects
-    window.dragOffsets.forEach(off => {
-        let obj = objects.find(o => o.id === off.id);
-        if(obj) {
-            obj.x = r2(off.ox + actualDx);
-            obj.y = r2(off.oy + actualDy);
-            obj.z = r2(off.oz + actualDz);
-        }
-    });
-    
-    render();
-    updateProps();
-    return;
   }
   if(isRotating&&rotId!==null){
     hasMoved=true;
@@ -2058,20 +2140,22 @@ async function processAndSetImage(file, o, callback, face = null){
   function canvasToWebp(canvas){return canvas.toDataURL('image/webp',0.85);}
   
   const applyToObj = (webp) => {
-      // If called with a specific target object (e.g. Quick Texture), apply only to it.
-      // Otherwise fall back to all selected objects (normal drag-drop / panel behaviour).
+      // Tên file (đã chuẩn hoá, bỏ hậu tố _v1/_PROOF/...) dùng làm "khoá" match
+      // cho Quick Texture sau này — độc lập hoàn toàn với tên layer (o.name).
+      const texKey = qtNormalizeName(file.name);
       const targets = o ? [o] : selectedIds.map(id => objects.find(x => x.id === id)).filter(Boolean);
       targets.forEach(ob => {
           if(!ob) return;
-          if (ob.type === 'cube' && face) {
-              if(!ob.images) ob.images = {};
-              if(!ob.imgOpts) ob.imgOpts = {};
-              ob.images[face] = webp;
-              ob.imgOpts[face] = {flipH:false, flipV:false, rot:0, fit:'fill'};
-          } else {
-              ob.image = webp;
-              ob.imgOpts={...ob.imgOpts,flipV:false};
-          }
+          if(!ob.images) ob.images = {};
+          if(!ob.imgOpts) ob.imgOpts = {};
+          if(!ob.texNames) ob.texNames = {};
+
+          // cube/plane dùng mặt được chỉ định; các trường hợp khác (vd legacy) -> 'front'
+          const targetFace = (ob.type === 'cube' || ob.type === 'plane') && face ? face : 'front';
+
+          ob.images[targetFace] = webp;
+          ob.imgOpts[targetFace] = {flipH:false, flipV:false, rot:0, fit:'fill'};
+          ob.texNames[targetFace] = texKey;
       });
   };
 
@@ -2155,7 +2239,6 @@ function qtNormalizeName(filename){
   // Remove extension
   let name = filename.replace(/\.[^/.]+$/, '');
   // Strip known suffixes after underscore: _PROOF1, _PROOF2, _digital, _print, _v1, _final, etc.
-  // Pattern: cut everything from the last underscore onwards if it matches a non-name suffix
   name = name.replace(/_(?:PROOF\d*|DIGITAL|PRINT|FINAL|APPROVED|V\d+|REV\d*|draft|proof\d*|digital|print|final|approved|v\d+|rev\d*)$/i, '');
   return name.trim().toLowerCase();
 }
@@ -2201,22 +2284,45 @@ function qtDrop(e){
 
   files.forEach(file => {
     const normalizedFile = qtNormalizeName(file.name);
+    let matched = null, matchedFace = null;
 
-    // Find best matching object: exact match first, then startsWith
-    let matched = objects.find(o => qtNormalizeName(o.name) === normalizedFile);
-    if(!matched) matched = objects.find(o => normalizedFile.startsWith(qtNormalizeName(o.name)) || qtNormalizeName(o.name).startsWith(normalizedFile));
+    // 1) Match theo texNames đã gán cho TỪNG MẶT — độc lập với tên layer (o.name),
+    //    nên đổi tên layer hay có nhiều mặt trên cùng 1 cube/plane vẫn nhận đúng file.
+    outer: for (const o of objects) {
+      if (!o.texNames) continue;
+      for (const face in o.texNames) {
+        if (o.texNames[face] === normalizedFile) { matched = o; matchedFace = face; break outer; }
+      }
+    }
+    // 1b) Không có khớp tuyệt đối -> thử khớp gần (startsWith) trên texNames
+    if (!matched) {
+      outer2: for (const o of objects) {
+        if (!o.texNames) continue;
+        for (const face in o.texNames) {
+          const tn = o.texNames[face];
+          if (normalizedFile.startsWith(tn) || tn.startsWith(normalizedFile)) { matched = o; matchedFace = face; break outer2; }
+        }
+      }
+    }
+
+    // 2) Chưa có mặt nào được gán trước đó -> fallback gán lần đầu theo tên layer,
+    //    mặc định vào mặt 'front'. Từ lần sau sẽ match theo texNames ở bước 1.
+    if (!matched) {
+      let m = objects.find(o => (o.type === 'cube' || o.type === 'plane') && qtNormalizeName(o.name) === normalizedFile);
+      if (!m) m = objects.find(o => (o.type === 'cube' || o.type === 'plane') &&
+        (normalizedFile.startsWith(qtNormalizeName(o.name)) || qtNormalizeName(o.name).startsWith(normalizedFile)));
+      if (m) { matched = m; matchedFace = 'front'; }
+    }
 
     if(!matched){
       if(--pending === 0) finish();
       return;
     }
 
-    const targetFace = matched.type === 'cube' ? 'front' : null;
-
     processAndSetImage(file, matched, () => {
       hasSuccess = true;
       if(--pending === 0) finish();
-    }, targetFace);
+    }, matchedFace);
   });
 }
 
@@ -2484,10 +2590,18 @@ function updateProps(){
   
   const o=objects.find(o=>o.id===selectedIds[0]);
   rt.textContent='Properties';
-  if(o.type==='plane')renderPlaneProps(el,o);else renderCubeProps(el,o);
+  if(o.type==='plane') renderPlaneProps(el,o);
+  else if(o.type==='man') rendermanProps(el,o);
+  else renderCubeProps(el,o);
 }
 
 function renderPlaneProps(el,p){
+  if(!p.images)p.images={};
+  if(!p.imgOpts)p.imgOpts={};
+  const face = selectedCubeFace === 'back' ? 'back' : 'front';
+  const fImg = p.images[face];
+  const fOpts = p.imgOpts[face] || {};
+
   el.innerHTML=`
   <div class="section"><div class="section-label">Name</div><div class="prop-row"><input class="prop-input" value="${p.name}" onchange="setProp('name',this.value)" style="flex:1;"></div></div>
   <div class="section"><div class="section-label">Size</div>
@@ -2510,14 +2624,24 @@ function renderPlaneProps(el,p){
     <div class="color-grid">${COLORS.map(c=>`<div class="cswatch ${p.color===c?'active':''}" style="background:${c};" onclick="setProp('color','${c}')"></div>`).join('')}<div class="color-input-wrap"><input type="color" value="${p.color}" onchange="setProp('color',this.value)"><div class="cc-preview">+</div></div></div>
     <div class="prop-row"><span class="prop-label" style="min-width:40px;">Opacity</span><input type="range" min="0.1" max="1" step="0.05" value="${p.opacity}" style="flex:1;" oninput="setProp('opacity',parseFloat(this.value));this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"><span style="font-size:10px;color:var(--text3);min-width:32px;text-align:right;">${Math.round(p.opacity*100)}%</span></div>
   </div>
-  <div class="section"><div class="section-label">Image Texture</div>
-    ${p.image?`<div class="img-preview"><img src="${p.image}"><div class="rm" onclick="setProp('image',null);render();updateProps();">×</div></div>
-    <div style="display:flex;gap:2px;padding:4px 12px;">
-      <button class="tb-btn" style="flex:1" onclick="setImgOpt('flipH',!${p.imgOpts?.flipH})">Flip H</button>
-      <button class="tb-btn" style="flex:1" onclick="setImgOpt('flipV',!${p.imgOpts?.flipV})">Flip V</button>
-      <button class="tb-btn" style="flex:1" onclick="setImgOpt('rot',(${p.imgOpts?.rot||0}+90)%360)">Rotate</button>
-      <button class="tb-btn" style="flex:1" onclick="setImgOpt('fit','${p.imgOpts?.fit==='fit'?'fill':'fit'}')">${p.imgOpts?.fit==='fit'?'Warp':'Fit'}</button>
-    </div>`:`<div class="img-drop" ondragover="this.classList.add('over')" ondragleave="this.classList.remove('over')"><input type="file" accept="image/*,application/pdf" onchange="loadImageFile(this)">↓ Drop image or PDF here</div>`}
+  <div class="section">
+    <div class="section-label" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>Face Texture</span>
+      <select onchange="selectedCubeFace=this.value; updateProps()" style="background:var(--surface3); border:1px solid var(--border); border-radius:3px; padding:2px 4px; font-size:9px; color:var(--text2); outline:none; cursor:pointer; text-transform:uppercase; font-weight:600;">
+        <option value="front" ${face==='front'?'selected':''}>front</option>
+        <option value="back"  ${face==='back' ?'selected':''}>back</option>
+      </select>
+    </div>
+    ${fImg
+      ? `<div class="img-preview"><img src="${fImg}"><div class="rm" onclick="setPlaneImgOpt(null,null,true)">×</div></div>
+         <div style="display:flex;gap:2px;padding:4px 12px;">
+           <button class="tb-btn" style="flex:1" onclick="setPlaneImgOpt('flipH',!${fOpts.flipH||false})">Flip H</button>
+           <button class="tb-btn" style="flex:1" onclick="setPlaneImgOpt('flipV',!${fOpts.flipV||false})">Flip V</button>
+           <button class="tb-btn" style="flex:1" onclick="setPlaneImgOpt('rot',(${fOpts.rot||0}+90)%360)">Rotate</button>
+           <button class="tb-btn" style="flex:1" onclick="setPlaneImgOpt('fit','${fOpts.fit==='fit'?'fill':'fit'}')">${fOpts.fit==='fit'?'Warp':'Fit'}</button>
+         </div>`
+      : `<div class="img-drop" ondragover="this.classList.add('over')" ondragleave="this.classList.remove('over')"><input type="file" accept="image/*,application/pdf" onchange="loadPlaneImageFile(this)">↓ Drop image or PDF here</div>`
+    }
   </div>
   <div class="section"><div class="toggle-row"><span class="tgl-label">Visible</span><div class="tgl ${p.visible?'on':''}" onclick="setProp('visible',!${p.visible})"></div></div>
     <div class="toggle-row"><span class="tgl-label">Locked</span><div class="tgl ${p.locked?'on':''}" onclick="setProp('locked',!${p.locked})"></div></div>
@@ -2566,6 +2690,29 @@ function renderCubeProps(el,o){
   </div>`;
 }
 
+function rendermanProps(el,o){
+  el.innerHTML=`
+  <div class="section"><div class="section-label">Name</div><div class="prop-row"><input class="prop-input" value="${o.name}" onchange="setProp('name',this.value)" style="flex:1;"></div></div>
+  
+  <div class="section"><div class="section-label">Size</div>
+    <div class="prop-row"><span class="prop-label">Height</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(o.h)}" onchange="setPropDim('h',this.value)"><span class="prop-unit">${unit}</span></div>
+  </div>
+
+  <div class="section"><div class="section-label">Position & Rot</div>
+    <div class="prop-row"><span class="prop-label">X</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(o.x)}" onchange="setPropXYZ('x',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">Y</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(o.y)}" onchange="setPropXYZ('y',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">Z</span><input class="prop-input" type="number" step="any" value="${formatDimRaw(o.z)}" onchange="setPropXYZ('z',this.value)"><span class="prop-unit">${unit}</span></div>
+    <div class="prop-row"><span class="prop-label">Rot Z</span><input class="prop-input" type="number" step="any" value="${r2(o.rotZ||0)}" onchange="setPropRotZ(this.value)"><span class="prop-unit">deg</span></div>
+  </div>
+  <div class="section"><div class="section-label">Skin Color</div>
+    <div class="color-grid">${COLORS.map(c=>`<div class="cswatch ${o.color===c?'active':''}" style="background:${c};" onclick="setProp('color','${c}')"></div>`).join('')}<div class="color-input-wrap"><input type="color" value="${o.color}" onchange="setProp('color',this.value)"><div class="cc-preview">+</div></div></div>
+  </div>
+  <div class="section"><div class="toggle-row"><span class="tgl-label">Visible</span><div class="tgl ${o.visible?'on':''}" onclick="setProp('visible',!${o.visible})"></div></div>
+    <div class="toggle-row"><span class="tgl-label">Locked</span><div class="tgl ${o.locked?'on':''}" onclick="setProp('locked',!${o.locked})"></div></div>
+    <div style="padding:6px 12px;"><button class="btn-secondary" style="width:100%;height:26px;font-size:11px;color:var(--red);border-color:rgba(239,68,68,.3);" onclick="ctxDelete()">Delete man</button></div>
+  </div>`;
+}
+
 function setProp(key,val){saveState();selectedIds.forEach(id=>{let o=objects.find(o=>o.id===id);if(o)o[key]=val;});render();updateProps();}
 function setPropDim(dim,val){const n=toCm(val);if(isNaN(n)||n<=0)return;saveState();selectedIds.forEach(id=>{let o=objects.find(o=>o.id===id);if(o)o[dim]=r2(n);});render();}
 function setPropXYZ(axis,val){const n=toCm(val);if(isNaN(n))return;saveState();selectedIds.forEach(id=>{let o=objects.find(o=>o.id===id);if(o)o[axis]=r2(n);});render();updateProps();}
@@ -2578,8 +2725,34 @@ function setCubeImgOpt(k,v,remove=false){
   selectedIds.forEach(id=>{
       let o=objects.find(o=>o.id===id);
       if(!o||o.type!=='cube')return;
-      if(remove){ delete o.images[selectedCubeFace]; }
+      if(remove){ 
+          delete o.images[selectedCubeFace]; 
+          if(o.texNames) delete o.texNames[selectedCubeFace]; // Xóa tên texture
+      }
       else { o.imgOpts[selectedCubeFace][k]=v; }
+  });
+  render();updateProps();
+}
+function loadPlaneImageFile(input){
+  const file=input.files[0]; if(!file)return;
+  const o=objects.find(o=>o.id===selectedIds[0]); if(!o||o.type!=='plane')return;
+  const face = selectedCubeFace === 'back' ? 'back' : 'front';
+  processAndSetImage(file,o,()=>{saveState();render();updateProps();}, face);
+}
+function setPlaneImgOpt(k,v,remove=false){
+  saveState();
+  const face = selectedCubeFace === 'back' ? 'back' : 'front';
+  selectedIds.forEach(id=>{
+    let o=objects.find(o=>o.id===id);
+    if(!o||o.type!=='plane')return;
+    if(!o.images)o.images={};
+    if(!o.imgOpts)o.imgOpts={};
+    if(remove){ 
+        delete o.images[face]; 
+        delete o.imgOpts[face]; 
+        if(o.texNames) delete o.texNames[face]; // Xóa tên texture
+    }
+    else { if(!o.imgOpts[face])o.imgOpts[face]={}; o.imgOpts[face][k]=v; }
   });
   render();updateProps();
 }
@@ -2628,21 +2801,55 @@ function setProjMode(mode){
 }
 
 // ── LAYERS ────────────────────────────────────────────────────────────
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 function updateLayers(){
   const el=document.getElementById('layer-list');
   if(!objects.length){el.innerHTML='<div style="padding:16px 12px;text-align:center;color:var(--text3);font-size:11px;">No objects yet</div>';return;}
-  el.innerHTML=objects.map((o,i)=>`
+  el.innerHTML=objects.map((o)=>{
+    // Danh sách "tên file" đã match cho từng mặt — độc lập hoàn toàn với tên layer (o.name).
+    // Hiển thị dưới dạng "filename [face]" để biết mặt nào đang dùng file nào.
+    const texEntries = o.texNames ? Object.entries(o.texNames).filter(([,name]) => name) : [];
+    const texListHtml = texEntries.length ? `
+      <div class="layer-tex-list" style="pointer-events:none;">
+        ${texEntries.map(([face,name]) => `
+          <span class="layer-tex">
+            <span class="layer-tex-name">${escapeHtml(name)}</span>
+          </span>`).join('')}
+      </div>` : '';
+
+    return `
     <div class="layer-item ${selectedIds.includes(o.id)?'selected':''} ${!o.visible?'hidden':''}"
-      onclick="selectObject(${o.id}, event.shiftKey||event.metaKey||event.ctrlKey)"
+      data-layer-id="${o.id}"
       onmouseenter="hoverLayer(${o.id},true)"
       onmouseleave="hoverLayer(${o.id},false)">
-      <div class="layer-thumb" style="background:${o.color};"></div>
-      <span class="layer-name">${o.name}</span>
-      <span class="layer-type">${o.type==='cube'?'Box':'Wall'}</span>
-      <div class="layer-vis-btn" onclick="event.stopPropagation();toggleVis(${o.id})">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><${o.visible?'':'path d="M1 1l10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>'}${o.visible?'<circle cx="6" cy="6" r="2" stroke="currentColor" stroke-width="1.1"/><path d="M1 6s1.8-3 5-3 5 3 5 3-1.8 3-5 3-5-3-5-3z" stroke="currentColor" stroke-width="1.1"/>':''}</svg>
+      <div class="layer-item-main">
+        <div class="layer-thumb" style="background:${o.color};pointer-events:none;"></div>
+        <span class="layer-name" style="pointer-events:none;">${escapeHtml(o.name)}</span>
+        <span class="layer-type" style="pointer-events:none;">${o.type==='cube'?'Box':'Wall'}</span>
+        <div class="layer-vis-btn" data-vis-id="${o.id}">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><${o.visible?'':'path d="M1 1l10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>'}${o.visible?'<circle cx="6" cy="6" r="2" stroke="currentColor" stroke-width="1.1"/><path d="M1 6s1.8-3 5-3 5 3 5 3-1.8 3-5 3-5-3-5-3z" stroke="currentColor" stroke-width="1.1"/>':''}</svg>
+        </div>
       </div>
-    </div>`).join('');
+      ${texListHtml}
+    </div>`;
+  }).join('');
+
+  el.querySelectorAll('.layer-item').forEach(item => {
+    item.addEventListener('mousedown', e => {
+      const visBtn = e.target.closest('[data-vis-id]');
+      if(visBtn){
+        e.stopPropagation();
+        const vid = parseInt(visBtn.getAttribute('data-vis-id'));
+        toggleVis(vid);
+        return;
+      }
+      const id = parseInt(item.getAttribute('data-layer-id'));
+      selectObject(id, e.shiftKey||e.metaKey||e.ctrlKey);
+    });
+  });
+
 }
 function toggleVis(id){const o=objects.find(o=>o.id===id);if(!o)return;o.visible=!o.visible;render();updateProps();}
 function hoverLayer(id, entering){
@@ -2688,7 +2895,7 @@ function setTool(t){
   
   // Update cursor based on tool
   const vp = document.getElementById('viewport');
-  if (t === 'plane' || t === 'cube') {
+  if (t === 'plane' || t === 'cube' || t === 'man') {
       vp.style.cursor = 'crosshair';
   } else if (t === 'comment') {
       vp.style.cursor = 'copy';
