@@ -351,6 +351,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);heigh
 </head>
 <body>
 
+<!-- BẮT ĐẦU: FFMPEG PROGRESS UI -->
+<div id="ffmpeg-loader" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:var(--surface); padding:20px; border-radius:8px; box-shadow:var(--shadow-lg); z-index:9999; text-align:center; min-width:240px; border:1px solid var(--border);">
+  <div style="font-size:13px; font-weight:600; margin-bottom:10px; color:var(--text);" id="ffmpeg-text">Initializing Video Engine...</div>
+  <div style="width:100%; height:6px; background:var(--surface3); border-radius:3px; overflow:hidden;">
+     <div id="ffmpeg-bar" style="width:0%; height:100%; background:var(--accent); transition:width 0.2s;"></div>
+  </div>
+</div>
+<!-- KẾT THÚC: FFMPEG PROGRESS UI -->
+
 <!-- TOOLBAR -->
 <div id="toolbar">
   <div class="tb-left">
@@ -917,16 +926,23 @@ function drawCssPlane(scene, p) {
 
     if (fImg) {
       div.style.overflow = 'hidden';
-      const img = document.createElement('img');
-      img.src = fImg;
-      img.style.width  = '100%';
-      img.style.height = '100%';
-      img.style.objectFit = fOpts.fit === 'fit' ? 'contain' : 'fill';
-      img.style.pointerEvents = 'none';
+      
+      const isVideo = fImg.startsWith('data:video/');
+      const media = document.createElement(isVideo ? 'video' : 'img');
+      media.src = fImg;
+      
+      if(isVideo) {
+          media.autoplay = true;
+          media.loop = true;
+          media.muted = true;
+          media.playsInline = true;
+      }
 
-      // Front face: same flip logic as before.
-      // Back face: rotateY(180deg) already mirrors X, so the image sits correct
-      // without any extra scale needed — just honour user flipH/flipV/rot.
+      media.style.width  = '100%';
+      media.style.height = '100%';
+      media.style.objectFit = fOpts.fit === 'fit' ? 'contain' : 'fill';
+      media.style.pointerEvents = 'none';
+
       let rx, ry;
       if (isBack) {
         rx = fOpts.flipH ? -1 : 1;
@@ -938,8 +954,8 @@ function drawCssPlane(scene, p) {
         ry = fOpts.flipV ? -defaultRy : defaultRy;
       }
       const rot = fOpts.rot || 0;
-      img.style.transform = `rotate(${rot}deg) scale(${rx}, ${ry})`;
-      div.appendChild(img);
+      media.style.transform = `rotate(${rot}deg) scale(${rx}, ${ry})`;
+      div.appendChild(media);
     } else {
       const lm = p.axis === 'floor' ? 0.92 : (p.axis === 'z' ? 1 : 0.82);
       // Back face slightly darker so you can tell which side you're on
@@ -1033,21 +1049,32 @@ function drawCssCube(scene, o) {
         if (o.images && o.images[f.name]) {
             face.style.backgroundColor = 'transparent';
             face.style.overflow = 'hidden';
-            const img = document.createElement('img');
-            img.src = o.images[f.name];
-            img.style.width = '100%';
-            img.style.height = '100%';
+            
+            const fImg = o.images[f.name];
+            const isVideo = fImg.startsWith('data:video/');
+            const media = document.createElement(isVideo ? 'video' : 'img');
+            media.src = fImg;
+            
+            if(isVideo) {
+                media.autoplay = true;
+                media.loop = true;
+                media.muted = true;
+                media.playsInline = true;
+            }
+
+            media.style.width = '100%';
+            media.style.height = '100%';
             
             const fOpts = o.imgOpts?.[f.name] || {};
-            img.style.objectFit = fOpts.fit === 'fit' ? 'contain' : 'fill';
+            media.style.objectFit = fOpts.fit === 'fit' ? 'contain' : 'fill';
             
             let rx = fOpts.flipH ? -1 : 1;
             let ry = fOpts.flipV ? -1 : 1;
             let rot = fOpts.rot || 0;
             
-            img.style.transform = `rotate(${rot}deg) scale(${rx}, ${ry})`;
-            img.style.pointerEvents = 'none';
-            face.appendChild(img);
+            media.style.transform = `rotate(${rot}deg) scale(${rx}, ${ry})`;
+            media.style.pointerEvents = 'none';
+            face.appendChild(media);
         } else {
             face.style.backgroundColor = o.color;
             face.style.opacity = o.opacity;
@@ -2134,14 +2161,108 @@ function doZoom(d){
 
 function vpDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='copy';}
 
-// ── IMAGE PROCESSING ──────────────────────────────────────────────────
+// ── VIDEO PROCESSING (FFMPEG.WASM v0.9.8 - NO SharedArrayBuffer) ────────
+let ffmpeg = null;
+
+function setFFmpegProgress(text, percent) {
+    const loader = document.getElementById('ffmpeg-loader');
+    if(loader) loader.style.display = 'block';
+    const textEl = document.getElementById('ffmpeg-text');
+    if(textEl) textEl.textContent = text;
+    const barEl = document.getElementById('ffmpeg-bar');
+    if(barEl) barEl.style.width = percent + '%';
+}
+
+function hideFFmpegProgress() {
+    const loader = document.getElementById('ffmpeg-loader');
+    if(loader) loader.style.display = 'none';
+}
+
+async function convertVideoToWebM(file) {
+    setFFmpegProgress("Loading Video Engine...", 5);
+    
+    // Tải script FFmpeg bản v0.9.8 (Bản không yêu cầu SharedArrayBuffer)
+    if (!window.FFmpeg) {
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.9.8/dist/ffmpeg.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    if (!ffmpeg) {
+        const { createFFmpeg } = window.FFmpeg;
+        // Ép tải core v0.8.5 gốc - An toàn tuyệt đối cho file HTML tĩnh
+        ffmpeg = createFFmpeg({ 
+            corePath: 'https://unpkg.com/@ffmpeg/core@0.8.5/dist/ffmpeg-core.js',
+            log: false 
+        });
+        
+        // Bắt tiến trình %
+        ffmpeg.setProgress(({ ratio }) => {
+            // ratio chạy từ 0.0 -> 1.0
+            setFFmpegProgress(`Compressing Video to 240p...`, Math.max(15, Math.round(ratio * 100)));
+        });
+    }
+
+    if (!ffmpeg.isLoaded()) {
+        setFFmpegProgress("Downloading FFmpeg Core...", 10);
+        await ffmpeg.load();
+    }
+
+    const { fetchFile } = window.FFmpeg;
+    
+    // Đảm bảo đúng định dạng mở rộng gốc của video
+    const ext = file.name.substring(file.name.lastIndexOf('.'));
+    const inputName = 'input' + (ext || '.mp4');
+    const outputName = 'output.webm';
+
+    // Đưa file vào hệ thống ảo của WebAssembly
+    ffmpeg.FS('writeFile', inputName, await fetchFile(file));
+
+    setFFmpegProgress("Starting compression...", 15);
+    
+    // Lệnh nén: 
+    // -vf scale=-2:240 (Ép cao 240p, ngang tự tính số chẵn)
+    // -an (Tắt tiếng hoàn toàn)
+    // -c:v libvpx (Chuẩn nén WebM nhẹ nhất cho web)
+    await ffmpeg.run(
+        '-i', inputName, 
+        '-vf', 'scale=-2:240', 
+        '-an', 
+        '-c:v', 'libvpx', 
+        '-b:v', '400k', 
+        outputName
+    );
+
+    setFFmpegProgress("Finishing...", 99);
+    
+    // Trích xuất video ra DataURL (Base64) để embed trực tiếp vào code
+    const data = ffmpeg.FS('readFile', outputName);
+    const blob = new Blob([data.buffer], { type: 'video/webm' });
+    
+    const dataUrl = await new Promise((res) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result);
+        reader.readAsDataURL(blob);
+    });
+
+    // Dọn dẹp RAM
+    ffmpeg.FS('unlink', inputName);
+    ffmpeg.FS('unlink', outputName);
+    hideFFmpegProgress();
+
+    return dataUrl;
+}
+
+// ── IMAGE & VIDEO PROCESSING ──────────────────────────────────────────
 async function processAndSetImage(file, o, callback, face = null){
   const MAX=1000;
   function canvasToWebp(canvas){return canvas.toDataURL('image/webp',0.85);}
   
-  const applyToObj = (webp) => {
-      // Tên file (đã chuẩn hoá, bỏ hậu tố _v1/_PROOF/...) dùng làm "khoá" match
-      // cho Quick Texture sau này — độc lập hoàn toàn với tên layer (o.name).
+  const applyToObj = (dataUrl) => {
       const texKey = qtNormalizeName(file.name);
       const targets = o ? [o] : selectedIds.map(id => objects.find(x => x.id === id)).filter(Boolean);
       targets.forEach(ob => {
@@ -2150,14 +2271,27 @@ async function processAndSetImage(file, o, callback, face = null){
           if(!ob.imgOpts) ob.imgOpts = {};
           if(!ob.texNames) ob.texNames = {};
 
-          // cube/plane dùng mặt được chỉ định; các trường hợp khác (vd legacy) -> 'front'
           const targetFace = (ob.type === 'cube' || ob.type === 'plane') && face ? face : 'front';
 
-          ob.images[targetFace] = webp;
+          ob.images[targetFace] = dataUrl;
           ob.imgOpts[targetFace] = {flipH:false, flipV:false, rot:0, fit:'fill'};
           ob.texNames[targetFace] = texKey;
       });
   };
+
+  // NẾU LÀ VIDEO: GỌI FFMPEG
+  if (file.type.startsWith('video/')) {
+      try {
+          const webmDataUrl = await convertVideoToWebM(file);
+          applyToObj(webmDataUrl);
+          callback();
+      } catch (err) {
+          console.error(err);
+          alert("Failed to process video.");
+          hideFFmpegProgress();
+      }
+      return;
+  }
 
   function resizeAndSet(imgEl){
     let w=imgEl.naturalWidth||imgEl.width;
