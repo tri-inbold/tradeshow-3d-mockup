@@ -2229,7 +2229,7 @@ async function convertVideoToWebM(file) {
     if (!window.FFmpeg || !window.FFmpeg.createFFmpeg) {
         await new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/ffmpeg.min.js';
+            script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js';
             script.onload = () => {
                 setTimeout(() => {
                     if (window.FFmpeg && window.FFmpeg.createFFmpeg) resolve();
@@ -2245,7 +2245,7 @@ async function convertVideoToWebM(file) {
         const { createFFmpeg } = window.FFmpeg;
         // Core multi-thread bản 0.12.x — cần SharedArrayBuffer, được mở khóa bởi coi-serviceworker.js
         ffmpeg = createFFmpeg({
-            corePath: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/ffmpeg-core.js',
+            corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
             log: false
         });
 
