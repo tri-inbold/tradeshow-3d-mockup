@@ -2181,22 +2181,39 @@ function hideFFmpegProgress() {
 async function convertVideoToWebM(file) {
     setFFmpegProgress("Loading Video Engine...", 5);
 
-    // FFmpeg.wasm v0.10.1 (UMD build, export createFFmpeg)
+	// Polyfill giả để qua kiểm tra tồn tại, ffmpeg.wasm single-thread không thực sự dùng đến nó
+	if (typeof window.SharedArrayBuffer === 'undefined') {
+		window.SharedArrayBuffer = ArrayBuffer;
+	}
+
+    // Tải script FFmpeg UMD (export createFFmpeg) - chỉ tải nếu chưa có
     if (!window.FFmpeg || !window.FFmpeg.createFFmpeg) {
         await new Promise((resolve, reject) => {
+            const existing = document.querySelector('script[data-ffmpeg-lib]');
+            if (existing) existing.remove(); // xóa script cũ lỗi nếu có
+
             const script = document.createElement('script');
-            script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.10.1/dist/ffmpeg.min.js';
-            script.onload = resolve;
-            script.onerror = reject;
+            script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js';
+            script.dataset.ffmpegLib = 'true';
+            script.onload = () => {
+                // Đợi thêm 1 tick để chắc chắn window.FFmpeg đã gán xong
+                setTimeout(() => {
+                    if (window.FFmpeg && window.FFmpeg.createFFmpeg) {
+                        resolve();
+                    } else {
+                        reject(new Error('FFmpeg script loaded but window.FFmpeg.createFFmpeg missing'));
+                    }
+                }, 0);
+            };
+            script.onerror = () => reject(new Error('Failed to load FFmpeg script (network/CORS/blocked)'));
             document.head.appendChild(script);
         });
     }
 
     if (!ffmpeg) {
         const { createFFmpeg } = window.FFmpeg;
-        // Core 0.10.0 bản thường: KHÔNG dùng SharedArrayBuffer (chỉ bản multithread mới cần)
         ffmpeg = createFFmpeg({
-            corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
+            corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
             log: false
         });
 
