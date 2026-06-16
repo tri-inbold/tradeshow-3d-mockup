@@ -2181,35 +2181,29 @@ function hideFFmpegProgress() {
 async function convertVideoToWebM(file) {
     setFFmpegProgress("Loading Video Engine...", 5);
 
-    // FFmpeg.wasm v0.10.1 (UMD build, export createFFmpeg) - chạy tốt trên GitHub Pages
-    if (typeof SharedArrayBuffer === 'undefined') {
-    throw new Error(
-        'SharedArrayBuffer unavailable. FFmpeg.wasm disabled.'
-    );
-}
+    // FFmpeg.wasm v0.10.1 (UMD build, export createFFmpeg)
+    if (!window.FFmpeg || !window.FFmpeg.createFFmpeg) {
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.10.1/dist/ffmpeg.min.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
 
-if (!window.FFmpeg || !window.FFmpeg.createFFmpeg) {
-    const script = document.createElement('script');
+    if (!ffmpeg) {
+        const { createFFmpeg } = window.FFmpeg;
+        // Core 0.10.0 bản thường: KHÔNG dùng SharedArrayBuffer (chỉ bản multithread mới cần)
+        ffmpeg = createFFmpeg({
+            corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
+            log: false
+        });
 
-    script.src =
-        'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.10.1/dist/ffmpeg.min.js';
-
-    await new Promise((resolve, reject) => {
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-    });
-}
-
-if (!ffmpeg) {
-    const { createFFmpeg } = window.FFmpeg;
-
-    ffmpeg = createFFmpeg({
-        log: true,
-        corePath:
-            'https://cdn.jsdelivr.net/npm/@ffmpeg/core-st@0.10.0/dist/ffmpeg-core.js'
-    });
-}
+        ffmpeg.setProgress(({ ratio }) => {
+            setFFmpegProgress(`Compressing Video to 240p...`, Math.max(15, Math.round(ratio * 100)));
+        });
+    }
 
     if (!ffmpeg.isLoaded()) {
         setFFmpegProgress("Downloading FFmpeg Core...", 10);
