@@ -2181,7 +2181,7 @@ function hideFFmpegProgress() {
 async function convertVideoToWebM(file) {
     setFFmpegProgress("Loading Video Engine...", 5);
 
-    // FFmpeg.wasm v0.10.1 (UMD build, export createFFmpeg) - chạy tốt trên GitHub Pages
+    // FFmpeg.wasm v0.10.1 (UMD build, export createFFmpeg)
     if (!window.FFmpeg || !window.FFmpeg.createFFmpeg) {
         await new Promise((resolve, reject) => {
             const script = document.createElement('script');
@@ -2194,9 +2194,9 @@ async function convertVideoToWebM(file) {
 
     if (!ffmpeg) {
         const { createFFmpeg } = window.FFmpeg;
-        // Core single-thread (-st): KHÔNG cần SharedArrayBuffer / COOP-COEP header
+        // Core 0.10.0 bản thường: KHÔNG dùng SharedArrayBuffer (chỉ bản multithread mới cần)
         ffmpeg = createFFmpeg({
-            corePath: 'https://unpkg.com/@ffmpeg/core-st@0.10.0/dist/ffmpeg-core.js',
+            corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
             log: false
         });
 
