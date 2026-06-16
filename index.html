@@ -2161,8 +2161,14 @@ function doZoom(d){
 
 function vpDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='copy';}
 
-// ── VIDEO PROCESSING (FFMPEG.WASM v0.9.8 - NO SharedArrayBuffer) ────────
+// ── HACK: VƯỢT LỖI SHARED ARRAY BUFFER TRÊN HTML TĨNH / GITHUB PAGES ──
+if (typeof SharedArrayBuffer === 'undefined') {
+    window.SharedArrayBuffer = window.ArrayBuffer;
+}
+
+// ── VIDEO PROCESSING (FFMPEG.WASM v0.12 - SINGLE THREAD) ──
 let ffmpeg = null;
+let FFmpegUtil = null;
 
 function setFFmpegProgress(text, percent) {
     const loader = document.getElementById('ffmpeg-loader');
@@ -2181,66 +2187,64 @@ function hideFFmpegProgress() {
 async function convertVideoToWebM(file) {
     setFFmpegProgress("Loading Video Engine...", 5);
     
-    // Tải script FFmpeg bản v0.9.8 (Bản không yêu cầu SharedArrayBuffer)
+    // Tải script FFmpeg v0.12 (bản UMD)
     if (!window.FFmpeg) {
         await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.9.8/dist/ffmpeg.min.js';
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
+            const s1 = document.createElement('script');
+            s1.src = 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js';
+            document.head.appendChild(s1);
+            s1.onload = () => {
+                const s2 = document.createElement('script');
+                s2.src = 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js';
+                document.head.appendChild(s2);
+                s2.onload = resolve;
+                s2.onerror = reject;
+            };
+            s1.onerror = reject;
         });
     }
 
     if (!ffmpeg) {
-        const { createFFmpeg } = window.FFmpeg;
-        // Ép tải core v0.8.5 gốc - An toàn tuyệt đối cho file HTML tĩnh
-        ffmpeg = createFFmpeg({ 
-            corePath: 'https://unpkg.com/@ffmpeg/core@0.8.5/dist/ffmpeg-core.js',
-            log: false 
-        });
+        const { FFmpeg } = window.FFmpeg;
+        FFmpegUtil = window.FFmpegUtil;
+        ffmpeg = new FFmpeg();
         
-        // Bắt tiến trình %
-        ffmpeg.setProgress(({ ratio }) => {
-            // ratio chạy từ 0.0 -> 1.0
-            setFFmpegProgress(`Compressing Video to 240p...`, Math.max(15, Math.round(ratio * 100)));
+        ffmpeg.on('progress', ({ progress }) => {
+            setFFmpegProgress(`Compressing Video to 240p...`, Math.max(15, Math.round(progress * 100)));
         });
     }
 
-    if (!ffmpeg.isLoaded()) {
+    if (!ffmpeg.loaded) {
         setFFmpegProgress("Downloading FFmpeg Core...", 10);
-        await ffmpeg.load();
+        await ffmpeg.load({
+            // Tải bản Single-Thread Core (Không cần SharedArrayBuffer)
+            coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+            wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm',
+        });
     }
 
-    const { fetchFile } = window.FFmpeg;
-    
-    // Đảm bảo đúng định dạng mở rộng gốc của video
     const ext = file.name.substring(file.name.lastIndexOf('.'));
     const inputName = 'input' + (ext || '.mp4');
     const outputName = 'output.webm';
 
-    // Đưa file vào hệ thống ảo của WebAssembly
-    ffmpeg.FS('writeFile', inputName, await fetchFile(file));
+    // Đưa video vào hệ thống file ảo
+    await ffmpeg.writeFile(inputName, await FFmpegUtil.fetchFile(file));
 
     setFFmpegProgress("Starting compression...", 15);
     
-    // Lệnh nén: 
-    // -vf scale=-2:240 (Ép cao 240p, ngang tự tính số chẵn)
-    // -an (Tắt tiếng hoàn toàn)
-    // -c:v libvpx (Chuẩn nén WebM nhẹ nhất cho web)
-    await ffmpeg.run(
+    // Ép nén 240p WebM tắt tiếng
+    await ffmpeg.exec([
         '-i', inputName, 
         '-vf', 'scale=-2:240', 
         '-an', 
         '-c:v', 'libvpx', 
         '-b:v', '400k', 
         outputName
-    );
+    ]);
 
     setFFmpegProgress("Finishing...", 99);
     
-    // Trích xuất video ra DataURL (Base64) để embed trực tiếp vào code
-    const data = ffmpeg.FS('readFile', outputName);
+    const data = await ffmpeg.readFile(outputName);
     const blob = new Blob([data.buffer], { type: 'video/webm' });
     
     const dataUrl = await new Promise((res) => {
@@ -2249,12 +2253,92 @@ async function convertVideoToWebM(file) {
         reader.readAsDataURL(blob);
     });
 
-    // Dọn dẹp RAM
-    ffmpeg.FS('unlink', inputName);
-    ffmpeg.FS('unlink', outputName);
+    await ffmpeg.deleteFile(inputName);
+    await ffmpeg.deleteFile(outputName);
     hideFFmpegProgress();
 
     return dataUrl;
+}
+
+// ── IMAGE & VIDEO PROCESSING ──────────────────────────────────────────
+async function processAndSetImage(file, o, callback, face = null){
+  const MAX=1000;
+  function canvasToWebp(canvas){return canvas.toDataURL('image/webp',0.85);}
+  
+  const applyToObj = (dataUrl) => {
+      const texKey = qtNormalizeName(file.name);
+      const targets = o ? [o] : selectedIds.map(id => objects.find(x => x.id === id)).filter(Boolean);
+      targets.forEach(ob => {
+          if(!ob) return;
+          if(!ob.images) ob.images = {};
+          if(!ob.imgOpts) ob.imgOpts = {};
+          if(!ob.texNames) ob.texNames = {};
+
+          const targetFace = (ob.type === 'cube' || ob.type === 'plane') && face ? face : 'front';
+
+          ob.images[targetFace] = dataUrl;
+          ob.imgOpts[targetFace] = {flipH:false, flipV:false, rot:0, fit:'fill'};
+          ob.texNames[targetFace] = texKey;
+      });
+  };
+
+  // Nếu là Video -> Chạy FFmpeg
+  if (file.type.startsWith('video/')) {
+      try {
+          const webmDataUrl = await convertVideoToWebM(file);
+          applyToObj(webmDataUrl);
+          callback();
+      } catch (err) {
+          console.error(err);
+          alert("Failed to process video.");
+          hideFFmpegProgress();
+      }
+      return;
+  }
+
+  function resizeAndSet(imgEl){
+    let w=imgEl.naturalWidth||imgEl.width;
+    let h=imgEl.naturalHeight||imgEl.height;
+    if(w>MAX||h>MAX){
+      if(w>=h){h=Math.round(h*MAX/w);w=MAX;}
+      else{w=Math.round(w*MAX/h);h=MAX;}
+    }
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(imgEl,0,0,w,h);
+    applyToObj(canvasToWebp(c));
+    callback();
+  }
+  
+  if(file.type==='application/pdf'){
+    if(!window.pdfjsLib){
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        s.onload=res;s.onerror=rej;document.head.appendChild(s);
+      });
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc=
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+    const ab=await file.arrayBuffer();
+    const pdf=await window.pdfjsLib.getDocument({data:ab}).promise;
+    const page=await pdf.getPage(1);
+    const viewport=page.getViewport({scale:1});
+    const scale=MAX/Math.max(viewport.width,viewport.height);
+    const vp2=page.getViewport({scale});
+    const c=document.createElement('canvas');
+    c.width=Math.round(vp2.width);c.height=Math.round(vp2.height);
+    await page.render({canvasContext:c.getContext('2d'),viewport:vp2}).promise;
+    applyToObj(canvasToWebp(c));
+    callback();
+  }else{
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const img=new Image();
+      img.onload=()=>resizeAndSet(img);
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
 // ── IMAGE & VIDEO PROCESSING ──────────────────────────────────────────
