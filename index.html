@@ -2181,11 +2181,11 @@ function hideFFmpegProgress() {
 async function convertVideoToWebM(file) {
     setFFmpegProgress("Loading Video Engine...", 5);
 
-    // Tải script FFmpeg bản v0.11.6 (ổn định, hỗ trợ core single-thread)
-    if (!window.FFmpeg) {
+    // FFmpeg.wasm v0.10.1 (UMD build, export createFFmpeg) - chạy tốt trên GitHub Pages
+    if (!window.FFmpeg || !window.FFmpeg.createFFmpeg) {
         await new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js';
+            script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.10.1/dist/ffmpeg.min.js';
             script.onload = resolve;
             script.onerror = reject;
             document.head.appendChild(script);
@@ -2194,14 +2194,12 @@ async function convertVideoToWebM(file) {
 
     if (!ffmpeg) {
         const { createFFmpeg } = window.FFmpeg;
-        // QUAN TRỌNG: phải dùng core bản "-st" (single-thread)
-        // vì bản thường yêu cầu SharedArrayBuffer (cần COOP/COEP header, không có trên file HTML tĩnh)
+        // Core single-thread (-st): KHÔNG cần SharedArrayBuffer / COOP-COEP header
         ffmpeg = createFFmpeg({
-            corePath: 'https://unpkg.com/@ffmpeg/core-st@0.11.1/dist/ffmpeg-core.js',
+            corePath: 'https://unpkg.com/@ffmpeg/core-st@0.10.0/dist/ffmpeg-core.js',
             log: false
         });
 
-        // Bắt tiến trình %
         ffmpeg.setProgress(({ ratio }) => {
             setFFmpegProgress(`Compressing Video to 240p...`, Math.max(15, Math.round(ratio * 100)));
         });
