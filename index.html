@@ -2181,31 +2181,24 @@ function hideFFmpegProgress() {
 async function convertVideoToWebM(file) {
     setFFmpegProgress("Loading Video Engine...", 5);
 
-	// Polyfill giả để qua kiểm tra tồn tại, ffmpeg.wasm single-thread không thực sự dùng đến nó
-	if (typeof window.SharedArrayBuffer === 'undefined') {
-		window.SharedArrayBuffer = ArrayBuffer;
-	}
-
-    // Tải script FFmpeg UMD (export createFFmpeg) - chỉ tải nếu chưa có
     if (!window.FFmpeg || !window.FFmpeg.createFFmpeg) {
         await new Promise((resolve, reject) => {
             const existing = document.querySelector('script[data-ffmpeg-lib]');
-            if (existing) existing.remove(); // xóa script cũ lỗi nếu có
+            if (existing) existing.remove();
 
             const script = document.createElement('script');
             script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js';
             script.dataset.ffmpegLib = 'true';
             script.onload = () => {
-                // Đợi thêm 1 tick để chắc chắn window.FFmpeg đã gán xong
                 setTimeout(() => {
                     if (window.FFmpeg && window.FFmpeg.createFFmpeg) {
                         resolve();
                     } else {
-                        reject(new Error('FFmpeg script loaded but window.FFmpeg.createFFmpeg missing'));
+                        reject(new Error('FFmpeg script loaded but createFFmpeg missing'));
                     }
                 }, 0);
             };
-            script.onerror = () => reject(new Error('Failed to load FFmpeg script (network/CORS/blocked)'));
+            script.onerror = () => reject(new Error('Failed to load FFmpeg script'));
             document.head.appendChild(script);
         });
     }
@@ -2213,7 +2206,9 @@ async function convertVideoToWebM(file) {
     if (!ffmpeg) {
         const { createFFmpeg } = window.FFmpeg;
         ffmpeg = createFFmpeg({
-            corePath: 'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+            corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
+            wasmPath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.wasm',
+            workerPath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.worker.js',
             log: false
         });
 
