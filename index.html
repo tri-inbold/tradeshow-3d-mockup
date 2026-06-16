@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="coi-serviceworker.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nilfisk BoothCraft</title>
@@ -818,6 +819,41 @@ function updateUndoRedo(){
 const svg=document.getElementById('iso-canvas');
 function mkEl(t){return document.createElementNS(SVG_NS,t);}
 
+// Cache các <video> đang chạy để không bị reload mỗi lần render() (pan/zoom/move)
+const _videoElCache = new Map(); // key: "objId_face" -> <video> element
+const _activeVideoKeys = new Set(); // các key còn dùng trong lần render hiện tại
+
+function getOrCreateVideoEl(key, src) {
+  let v = _videoElCache.get(key);
+  if (v && v.dataset.src === src) {
+    return v; // tái sử dụng, không reset playback
+  }
+  if (v) {
+    v.remove();
+    _videoElCache.delete(key);
+  }
+  v = document.createElement('video');
+  v.dataset.src = src;
+  v.src = src;
+  v.autoplay = true;
+  v.loop = true;
+  v.muted = true;
+  v.playsInline = true;
+  _videoElCache.set(key, v);
+  return v;
+}
+
+// Dọn cache cho các key không còn tồn tại trong scene hiện tại (object bị xóa, đổi ảnh, v.v.)
+function pruneVideoElCache(validKeys) {
+  for (const key of _videoElCache.keys()) {
+    if (!validKeys.has(key)) {
+      const v = _videoElCache.get(key);
+      v.remove();
+      _videoElCache.delete(key);
+    }
+  }
+}
+
 function render(){
   ensurePerspOriginOverlay();
   if(isFlat && _flatNeedsAutoFit){
@@ -833,6 +869,7 @@ function render(){
   sceneNode.style.transform = `${isPerspective ? 'perspective(6000px) ' : ''}rotateX(${Math.PI/2 - camX}rad) rotateZ(${camZ}rad) scale3d(${CM_PX}, ${CM_PX}, ${CM_PX})`;
   
   sceneNode.innerHTML = '';
+  _activeVideoKeys.clear();
   if(showGrid) {
       const grid = document.createElement('div');
       grid.style.position = 'absolute';
@@ -855,6 +892,7 @@ function render(){
   }
   // flat mode draws into its own 2D overlay, see drawFlatMode()
   drawFlatOverlay();
+  pruneVideoElCache(_activeVideoKeys);
 
   svg.setAttribute('width', W);
   svg.setAttribute('height', H);
@@ -928,14 +966,14 @@ function drawCssPlane(scene, p) {
       div.style.overflow = 'hidden';
       
       const isVideo = fImg.startsWith('data:video/');
-      const media = document.createElement(isVideo ? 'video' : 'img');
-      media.src = fImg;
-      
-      if(isVideo) {
-          media.autoplay = true;
-          media.loop = true;
-          media.muted = true;
-          media.playsInline = true;
+      let media;
+      if (isVideo) {
+        const vKey = `plane_${p.id}_${face}`;
+        _activeVideoKeys.add(vKey);
+        media = getOrCreateVideoEl(vKey, fImg);
+      } else {
+        media = document.createElement('img');
+        media.src = fImg;
       }
 
       media.style.width  = '100%';
@@ -1052,14 +1090,14 @@ function drawCssCube(scene, o) {
             
             const fImg = o.images[f.name];
             const isVideo = fImg.startsWith('data:video/');
-            const media = document.createElement(isVideo ? 'video' : 'img');
-            media.src = fImg;
-            
-            if(isVideo) {
-                media.autoplay = true;
-                media.loop = true;
-                media.muted = true;
-                media.playsInline = true;
+            let media;
+            if (isVideo) {
+                const vKey = `cube_${o.id}_${f.name}`;
+                _activeVideoKeys.add(vKey);
+                media = getOrCreateVideoEl(vKey, fImg);
+            } else {
+                media = document.createElement('img');
+                media.src = fImg;
             }
 
             media.style.width = '100%';
@@ -2161,8 +2199,9 @@ function doZoom(d){
 
 function vpDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='copy';}
 
-// ── VIDEO PROCESSING (FFMPEG.WASM v0.9.8 - NO SharedArrayBuffer) ────────
+// ── VIDEO PROCESSING (FFmpeg.wasm multi-thread, nhờ coi-serviceworker.js mở khóa SharedArrayBuffer) ──
 let ffmpeg = null;
+const MAX_VIDEO_DURATION = 20; // giây - giới hạn nén vì chỉ dùng làm loop/background texture
 
 function setFFmpegProgress(text, percent) {
     const loader = document.getElementById('ffmpeg-loader');
@@ -2179,23 +2218,22 @@ function hideFFmpegProgress() {
 }
 
 async function convertVideoToWebM(file) {
+    // coi-serviceworker.js cần 1 lần reload đầu tiên để kích hoạt COOP/COEP.
+    // Nếu chưa crossOriginIsolated thì SharedArrayBuffer chưa khả dụng.
+    if (!window.crossOriginIsolated) {
+        throw new Error('Trang chưa kích hoạt Cross-Origin Isolation. Hãy tải lại trang (F5) một lần rồi thử lại.');
+    }
+
     setFFmpegProgress("Loading Video Engine...", 5);
 
     if (!window.FFmpeg || !window.FFmpeg.createFFmpeg) {
         await new Promise((resolve, reject) => {
-            const existing = document.querySelector('script[data-ffmpeg-lib]');
-            if (existing) existing.remove();
-
             const script = document.createElement('script');
-            script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js';
-            script.dataset.ffmpegLib = 'true';
+            script.src = 'https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/ffmpeg.min.js';
             script.onload = () => {
                 setTimeout(() => {
-                    if (window.FFmpeg && window.FFmpeg.createFFmpeg) {
-                        resolve();
-                    } else {
-                        reject(new Error('FFmpeg script loaded but createFFmpeg missing'));
-                    }
+                    if (window.FFmpeg && window.FFmpeg.createFFmpeg) resolve();
+                    else reject(new Error('FFmpeg script loaded but createFFmpeg missing'));
                 }, 0);
             };
             script.onerror = () => reject(new Error('Failed to load FFmpeg script'));
@@ -2205,15 +2243,15 @@ async function convertVideoToWebM(file) {
 
     if (!ffmpeg) {
         const { createFFmpeg } = window.FFmpeg;
+        // Core multi-thread bản 0.12.x — cần SharedArrayBuffer, được mở khóa bởi coi-serviceworker.js
         ffmpeg = createFFmpeg({
-            corePath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.js',
-            wasmPath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.wasm',
-            workerPath: 'https://unpkg.com/@ffmpeg/core@0.10.0/dist/ffmpeg-core.worker.js',
+            corePath: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/ffmpeg-core.js',
             log: false
         });
 
         ffmpeg.setProgress(({ ratio }) => {
-            setFFmpegProgress(`Compressing Video to 240p...`, Math.max(15, Math.round(ratio * 100)));
+            const pct = ratio >= 0 ? Math.max(15, Math.min(99, Math.round(ratio * 100))) : 15;
+            setFFmpegProgress(`Compressing Video to 240p...`, pct);
         });
     }
 
@@ -2232,12 +2270,17 @@ async function convertVideoToWebM(file) {
 
     setFFmpegProgress("Starting compression...", 15);
 
+    // -t giới hạn thời lượng (chỉ dùng làm loop texture, không cần video dài)
+    // -vf scale=-2:240 ép cao 240p, -an bỏ audio, libvpx nén nhẹ cho web
     await ffmpeg.run(
         '-i', inputName,
+        '-t', String(MAX_VIDEO_DURATION),
         '-vf', 'scale=-2:240',
         '-an',
         '-c:v', 'libvpx',
         '-b:v', '400k',
+        '-deadline', 'realtime',
+        '-cpu-used', '8',
         outputName
     );
 
