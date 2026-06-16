@@ -2333,15 +2333,55 @@ async function processAndSetImage(file, o, callback, face = null){
           const v = document.createElement('video');
           v.muted = true;
           v.playsInline = true;
-          v.src = videoDataUrl;
-          v.addEventListener('loadeddata', () => {
+          v.preload = 'auto';
+          // Phải nằm trong DOM thì mới decode/render được frame trên một số trình duyệt
+          v.style.position = 'fixed';
+          v.style.left = '-9999px';
+          v.style.top = '-9999px';
+          v.style.width = '1px';
+          v.style.height = '1px';
+          document.body.appendChild(v);
+
+          let resolved = false;
+          const cleanup = () => { v.pause(); v.remove(); };
+          const finish = (result) => {
+              if (resolved) return;
+              resolved = true;
+              cleanup();
+              resolve(result);
+          };
+
+          const capture = () => {
+              if (!v.videoWidth || !v.videoHeight) {
+                  finish(null);
+                  return;
+              }
               const c = document.createElement('canvas');
-              c.width = v.videoWidth || 320;
-              c.height = v.videoHeight || 240;
+              c.width = v.videoWidth;
+              c.height = v.videoHeight;
               c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
-              resolve(c.toDataURL('image/webp', 0.85));
+              finish(c.toDataURL('image/webp', 0.85));
+          };
+
+          v.addEventListener('loadedmetadata', () => {
+              // Ép seek tới 1 thời điểm nhỏ > 0 để buộc browser decode 1 frame thật
+              try { v.currentTime = Math.min(0.1, (v.duration || 1) / 2); }
+              catch (e) { capture(); }
           }, { once: true });
-          v.addEventListener('error', () => resolve(null), { once: true });
+
+          v.addEventListener('seeked', capture, { once: true });
+
+          // Fallback: nếu sau 3s vẫn chưa có gì thì thử play/pause để buộc decode
+          v.addEventListener('loadeddata', () => {
+              v.play().then(() => {
+                  setTimeout(() => { v.pause(); capture(); }, 50);
+              }).catch(() => capture());
+          }, { once: true });
+
+          v.addEventListener('error', () => finish(null), { once: true });
+          setTimeout(() => finish(null), 5000); // an toàn, không treo mãi
+
+          v.src = videoDataUrl;
       });
   }
 
