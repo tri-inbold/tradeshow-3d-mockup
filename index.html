@@ -2307,7 +2307,7 @@ async function processAndSetImage(file, o, callback, face = null){
   const MAX=1000;
   function canvasToWebp(canvas){return canvas.toDataURL('image/webp',0.85);}
   
-  const applyToObj = (dataUrl) => {
+  const applyToObj = (dataUrl, thumbDataUrl) => {
       const texKey = qtNormalizeName(file.name);
       const targets = o ? [o] : selectedIds.map(id => objects.find(x => x.id === id)).filter(Boolean);
       targets.forEach(ob => {
@@ -2315,20 +2315,42 @@ async function processAndSetImage(file, o, callback, face = null){
           if(!ob.images) ob.images = {};
           if(!ob.imgOpts) ob.imgOpts = {};
           if(!ob.texNames) ob.texNames = {};
+          if(!ob.videoThumbs) ob.videoThumbs = {};
 
           const targetFace = (ob.type === 'cube' || ob.type === 'plane') && face ? face : 'front';
 
           ob.images[targetFace] = dataUrl;
           ob.imgOpts[targetFace] = {flipH:false, flipV:false, rot:0, fit:'fill'};
           ob.texNames[targetFace] = texKey;
+          if (thumbDataUrl) ob.videoThumbs[targetFace] = thumbDataUrl;
+          else delete ob.videoThumbs[targetFace];
       });
   };
+
+  // Lấy frame đầu tiên của video làm ảnh thumbnail cho khung preview (không thể dùng <img> để hiển thị video)
+  function getVideoFirstFrameThumb(videoDataUrl) {
+      return new Promise((resolve) => {
+          const v = document.createElement('video');
+          v.muted = true;
+          v.playsInline = true;
+          v.src = videoDataUrl;
+          v.addEventListener('loadeddata', () => {
+              const c = document.createElement('canvas');
+              c.width = v.videoWidth || 320;
+              c.height = v.videoHeight || 240;
+              c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+              resolve(c.toDataURL('image/webp', 0.85));
+          }, { once: true });
+          v.addEventListener('error', () => resolve(null), { once: true });
+      });
+  }
 
   // NẾU LÀ VIDEO: GỌI FFMPEG
   if (file.type.startsWith('video/')) {
       try {
           const webmDataUrl = await convertVideoToWebM(file);
-          applyToObj(webmDataUrl);
+          const thumb = await getVideoFirstFrameThumb(webmDataUrl);
+          applyToObj(webmDataUrl, thumb);
           callback();
       } catch (err) {
           console.error(err);
@@ -2812,7 +2834,7 @@ function renderPlaneProps(el,p){
       </select>
     </div>
     ${fImg
-      ? `<div class="img-preview"><img src="${fImg}"><div class="rm" onclick="setPlaneImgOpt(null,null,true)">×</div></div>
+      ? `<div class="img-preview"><img src="${fImg.startsWith('data:video/') ? (p.videoThumbs?.[face] || '') : fImg}"><div class="rm" onclick="setPlaneImgOpt(null,null,true)">×</div></div>
          <div style="display:flex;gap:2px;padding:4px 12px;">
            <button class="tb-btn" style="flex:1" onclick="setPlaneImgOpt('flipH',!${fOpts.flipH||false})">Flip H</button>
            <button class="tb-btn" style="flex:1" onclick="setPlaneImgOpt('flipV',!${fOpts.flipV||false})">Flip V</button>
@@ -2855,7 +2877,7 @@ function renderCubeProps(el,o){
         ${['front','back','left','right','top','btm'].map(f=>`<option value="${f}" ${selectedCubeFace===f?'selected':''}>${f}</option>`).join('')}
       </select>
     </div>
-    ${o.images[selectedCubeFace]?`<div class="img-preview"><img src="${o.images[selectedCubeFace]}"><div class="rm" onclick="setCubeImgOpt(null, null, true)">×</div></div>
+    ${o.images[selectedCubeFace]?`<div class="img-preview"><img src="${o.images[selectedCubeFace].startsWith('data:video/') ? (o.videoThumbs?.[selectedCubeFace] || '') : o.images[selectedCubeFace]}"><div class="rm" onclick="setCubeImgOpt(null, null, true)">×</div></div>
     <div style="display:flex;gap:2px;padding:4px 12px;">
       <button class="tb-btn" style="flex:1" onclick="setCubeImgOpt('flipH',!${o.imgOpts[selectedCubeFace]?.flipH})">Flip H</button>
       <button class="tb-btn" style="flex:1" onclick="setCubeImgOpt('flipV',!${o.imgOpts[selectedCubeFace]?.flipV})">Flip V</button>
@@ -2907,6 +2929,7 @@ function setCubeImgOpt(k,v,remove=false){
       if(remove){ 
           delete o.images[selectedCubeFace]; 
           if(o.texNames) delete o.texNames[selectedCubeFace]; // Xóa tên texture
+          if(o.videoThumbs) delete o.videoThumbs[selectedCubeFace]; // Xóa thumbnail video
       }
       else { o.imgOpts[selectedCubeFace][k]=v; }
   });
@@ -2930,6 +2953,7 @@ function setPlaneImgOpt(k,v,remove=false){
         delete o.images[face]; 
         delete o.imgOpts[face]; 
         if(o.texNames) delete o.texNames[face]; // Xóa tên texture
+        if(o.videoThumbs) delete o.videoThumbs[face]; // Xóa thumbnail video
     }
     else { if(!o.imgOpts[face])o.imgOpts[face]={}; o.imgOpts[face][k]=v; }
   });
